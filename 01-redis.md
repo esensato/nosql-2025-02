@@ -10,43 +10,35 @@ https://redis.io/
 - Persistência dos dados não é a prioridade e sim a replicação
 - Tipos de valores: primitivos (string, números, lógicos), listas, conjuntos, hash e conjuntos ordenados
 
-## Utilizando Docker
+## Inslatando no Linux (Alpine)
 
 [Docker Playground](https://labs.play-with-docker.com/)
 
-## Preparando o Ambiente
-
-- Criar uma imagem baseada no centOS
-
-`docker pull centos`
-
-- Iniciar um `container`
-
-`docker run -it -p 6379:6379 --name redis centos`
-
-- Atualizar o repositório do `yum`
-
+- Executar as instruções abaixo para a instalação
+```bash
+apk update
+apk add redis
 ```
-cd /etc/yum.repos.d/
-sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-dnf update -y
-```
+- Iniciar o servidor
 
-## Instalando Redis no Container
-
-`yum install -y redis`
-
-## Executando
-
-```
+```bash
 redis-server --protected-mode no &
-
+```
+- Iniciar o cliente e testar
+```bash
 redis-cli
-
+ping
+```
+- Iniciar o cliente remoto
+```bash
+redis-cli -h IP_SERVIDOR
 ping
 ```
 
+## Redis on  Cloud
+
+- Seguir as instruções [aqui](https://redis.io/docs/latest/operate/rc/rc-quickstart/)
+ 
 ## Dados Prioritariamente em Memória
 
 - `SET msg alo`
