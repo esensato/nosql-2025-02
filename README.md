@@ -1,2 +1,1 @@
-# nosql-2025-02
-Disciplina noSQL
+Códigos e notas de aula da disciplina noSQL
