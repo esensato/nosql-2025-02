@@ -10,6 +10,10 @@ https://redis.io/
 - Persistência dos dados não é a prioridade e sim a replicação
 - Tipos de valores: primitivos (string, números, lógicos), listas, conjuntos, hash e conjuntos ordenados
 
+## Redis na Cloud
+
+- Redis pode ser acessado na Cloud [AQUI](https://app.redislabs.com/#/login)
+
 ## Inslatando no Linux (Alpine)
 
 [Docker Playground](https://labs.play-with-docker.com/)
@@ -176,10 +180,6 @@ XREAD BLOCK 0 STREAMS eventos $
 XADD eventos * tipo click
 ```
 
-## Redis na Cloud
-
-- Redis pode ser acessado na Cloud [AQUI](https://app.redislabs.com/#/login)
-
 ## Use Cases
 
 ## Eleição das Cores
@@ -313,13 +313,13 @@ const redis = require('redis');
 ```javascript
 let cli = null
 ```
-- Efetuar a conexão
+- Efetuar a conexão (atualizar o `<IP_SERVIDOR>`)
 ```javascript
 app.listen(port, async () => {
     
     cli = redis.createClient({
         socket: {
-            host: '192.168.0.19',
+            host: '<IP_SERVIDOR>',
             port: 6379
         }
     });
@@ -357,101 +357,197 @@ zrevrange votacao 0 0 withscores
 ```
 - **Exercício** - implementar a lógica para permitir que somente seja permitido um voto por *IP*
     - Dica: para obter o IP que acompanha uma requisição utilizar `req.ip`
-## Integração Aplicações (Nodejs)
 
-- Criar uma pasta `single-signon`
-- Acessar a pasta `cd single-signon`
-- Iniciar um projeto **Nodejs** `npm init -y`
-- Instalar o cliente **Redis** para **Nodejs** `npm install redis --save`
+## Single Signon
 
-  ```javascript
-  var redis = require('redis');
+- Criar uma aplicação nodejs com a seguinte lógica de negócio:
+    - Na primeira vez que o usuário acessar o sistema ele deve informar seu usuário e senha
+    - Também deve escolher a sua preferência de cores de texto e fundo da tela
+    - Nos acessos seguintes o sistema deve indentificar automaticamente o usuário autenticado (por meio de um *token*) e exibir a tela de acordo com as cores selecionadas anteriormente (sem a necessidade de novo *login*)
+#### Instruções
+- Instalar o **Redis** no [Docker Playground](https://labs.play-with-docker.com/) e iniciar o servidor
+```shell
+apk add redis
+redis-server
+```
+- Iniciar uma nova instância, instalar o **Redis**, para utilizar o `redis-cli` e criar a estrutura de votação inicial com os valores zerados
+```shell
+redis-cli -h <IP_SERVIDOR>
+zadd votacao 0 verde 0 amarelo 0 vermelho
+```
+- Iniciar uma nova instância para instalar a aplicação `nodejs`
+```shell
+apk add node npm
+apk add nodejs npm
+mkdir app
+cd app
+mkdir public
+touch public/index.html
+touch server.js
+npm init -y
+npm install --save express path ejs cookie-parser
+```
+- Clicar no botão **EDITOR**, selecionar o arquivo `public/login.html` e colar o código abaixo
 
-  async function testeConexao() {
+```html
+<!doctype html>
+<html lang="pt-BR">
 
-      const cli = redis.createClient({
-          password: '',
-          socket: {
-              host: '',
-              port: 16633
-          }
-      });
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tela de Login</title>
+    <style>
+        :root {
+            --bg: #f3f6fb;
+            --card: #ffffff;
+            --accent: #3b82f6;
+            --muted: #6b7280;
+        }
 
-      await cli.connect();
+        * {
+            box-sizing: border-box
+        }
 
-      cli.on("error", function (error) {
-          console.error(error);
-      });
+        html,
+        body {
+            height: 100%
+        }
 
-      console.log('conectado', cli.isOpen);
-      var ret = await cli.ping();
-      console.log(ret)
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            background: linear-gradient(180deg, var(--bg), #eef2ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-  }
+        /* Card central */
+        .login-card {
+            width: min(420px, 92vw);
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
 
-  testeConexao();
-  ```
-## Exemplo Express
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #0f172a
+        }
 
-- Instalar os pacotes necessários `npm install express ejs cookie-parser --save`
+        p.subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem
+        }
 
-- Exemplo:
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px
+        }
 
-  ```javascript
-  var express = require('express')
-  var app = express()
+        label {
+            font-size: 0.875rem;
+            color: #0f172a
+        }
 
-  app.use(express.static('public'))
+        select,
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            border: 1px solid #e6edf3;
+            border-radius: 12px;
+            outline: none;
+            transition: box-shadow .15s, border-color .15s;
+        }
 
-  app.get("/", (req, res) => {
-      res.status(200).send('Ok');
-  })
+        input[type="text"]:focus,
+        select:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+        }
 
-  app.listen(8888, () => {
-      console.log('Servidor iniciado porta 8888')
-  });
-  ```
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 6px;
+        }
 
-## Autenticação com Single-Signon
+        button[type="submit"] {
+            padding: 10px 16px;
+            font-size: 1rem;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.18);
+        }
 
-- Continuando a aplicação...
-- Criar duas pastas `view` e `public`
-- Criar a página `login.html` dentro de `public`
+        button[type="submit"]:active {
+            transform: translateY(1px)
+        }
+    </style>
+</head>
 
-    ```html
-    <html>
-    
-    <head>
-        <title>Redis - Login</title>
-    </head>
-    
-    <body style="font-family: Arial, Helvetica, sans-serif;">
-    
-        <div
-            style="display: flex;border: solid; flex-direction: column; height: 100%; align-items: center; justify-content: center;">
+<body>
+    <main class="login-card" role="main">
+        <form action="/login" method="post" autocomplete="on">
             <div>
-    
-                <form action="/login" method="POST">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username">
-                    <label for="senha">Senha:</label>
-                    <input type="password" id="senha" name="senha">
-                    <input type="submit" value="Login">
-                </form>
-    
+                <label for="username">Usuário</label>
+                <input id="username" name="username" type="text" required placeholder="seu usuário" />
             </div>
-        </div>
-    </body>
-    
-    </html>
-    ```
+
+            <div>
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" required placeholder="sua senha" />
+            </div>
+
+            <div>
+                <label for="corfrente">Cor da frente</label>
+                <select id="corfrente" name="corfrente">
+                    <option>Branco</option>
+                    <option>Preto</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="corfundo">Cor de fundo</label>
+                <select id="corfundo" name="corfundo">
+                    <option>Azul</option>
+                    <option>Amarelo</option>
+                    <option>Verde</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit">Entrar</button>
+            </div>
+        </form>
+    </main>
+</body>
+
+</html>
+```
   - Incluir a página de login como pública
 
-  ```javascript
-  app.use(express.static('public'))
-  ```
-
-  - Criar os *endpoints*
+```javascript
+app.use(express.static('public'))
+```
+- Criar os *endpoints*
 
   ```javascript
   app.get('/', (req, res) => {
@@ -465,40 +561,41 @@ zrevrange votacao 0 0 withscores
     res.status(200).send('Cookie removido');
   })
   ```
-- Criar a conexão com o **Redis** na *Cloud*
-  ```javascript
+- Criar a conexão com o **Redis** (alterar o `<IP_SERVIDOR>`)
+```javascript
 
-  var redis = require('redis');
+const redis = require('redis');
+let cli = null
 
-  const cli = redis.createClient({
-    password: '',
-    socket: {
-        host: '',
-        port: 16356
-    }
-  });
-
-  async function start() {
-
-    console.log('Teste conexao redis x nodejs')
-    console.log('Criar o client')
-    console.log('Estabelecer conexao')
-    await cli.connect()
-    const resultado = await cli.ping()
-    console.log(resultado)
-
-    app.listen(8888, () => {
-        console.log('Servidor iniciado porta 8888')
+app.listen(port, async () => {
+    
+    cli = redis.createClient({
+        socket: {
+            host: '<IP_SERVIDOR>',
+            port: 6379
+        }
     });
-}
+    
+    cli.on("error", function (error) {
+        console.error(error);
+    });
+    
+    await cli.connect();
+    
+    console.log('conectado', cli.isOpen);
+    var ret = await cli.ping();
+    console.log(ret)
+    
+    console.log(`Servidor rodando em http://localhost:${port}`);
 
-start();
+});
+
 ```
 - Adicionar o tratamento de *cookies*
-  ```javascript
-  var cookieParser = require('cookie-parser')
-  app.use(cookieParser())
-  ```
+```javascript
+var cookieParser = require('cookie-parser')
+app.use(cookieParser())
+```
 - Verificar se já existe o *token* armazenado na forma de *cookie*
 
   ```javascript
@@ -537,52 +634,27 @@ start();
   }
   })
   ```
-- Criar a página perfil.html dentro de `public`
-  ```html
-  <html>
-
-  <head>
-      <title>Redis - Perfil</title>
-  </head>
-  
-  <body style="font-family: Arial, Helvetica, sans-serif;">
-
-      <form action="/perfil" method="POST">
-          <label for="corfrente">Cor Frente:</label>
-          <select id="corfrente" name="corfrente">
-              <option value="#FF0000">Vermelho</option>
-              <option value="#00FF00">Verde</option>
-          </select>
-          <label for="corfundo">Cor Fundo:</label>
-          <select id="corfundo" name="corfundo">
-              <option value="#00FF00">Verde</option>
-              <option value="#FF0000">Vermelho</option>
-          </select>
-          <input type="submit" value="Selecionar">
-      </form>
-  </body>
-
-  </html>
-  ```
 - Habilitar o **ejs**
   ```javascript
   app.set('view engine', 'ejs')
   ```
 - Criar a página `home.ejs` dentro de `views`
 
-  ```html
-  <html>
+```html
+<html>
 
-  <head>
-      <title>Redis - Home</title>
-  </head>
+<head>
+    <title>Redis - Home</title>
+</head>
 
-  <body style="background-color:<%= corfundo %>" text="<%= corfrente %>">
-      <h1>Bem vindo!</h1>
-  </body>
+<body style="background-color:<%= corfundo %>" text="<%= corfrente %>">
+    <h1>Bem vindo!</h1>
+</body>
 
-  </html>
-  ```
+</html>
+```
+- **Exercício**: Criar uma página para o usuário selecionar um produto de uma loja de acessórios de informática(Mouse, Teclado, Notebook, Impressora) e informar a quantidade, respectivamente. Montar um carrinho de compra em **Redis** para armazenar os dados informados (mais de um produto pode ser adicionado a cada momento). Supor que o usuário seja identificado por `usuarioteste`
+
 ## Arquivo de Configuração
 
 - **Redis** pode ser iniciado com configurações específicas `redis-server redis.conf`
