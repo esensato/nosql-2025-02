@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Seleção de Cores</title>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .quadrado {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .quadrado:hover {
+            transform: scale(1.1);
+        }
+
+        .verde {
+            background-color: green;
+        }
+
+        .amarelo {
+            background-color: yellow;
+        }
+
+        .vermelho {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="quadrado verde" onclick="registrarCor('verde')"></div>
+        <div class="quadrado amarelo" onclick="registrarCor('amarelo')"></div>
+        <div class="quadrado vermelho" onclick="registrarCor('vermelho')"></div>
+    </div>
+
+    <script>
+        function registrarCor(cor) {
+            fetch(`/registrar/cor=${cor}`)
+                .then(response => response.text())
+                .then(data => console.log(data));
+        }
+    </script>
+</body>
+
+</html>
