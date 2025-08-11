@@ -35,10 +35,6 @@ redis-cli -h IP_SERVIDOR
 ping
 ```
 
-## Redis on  Cloud
-
-- Seguir as instruções [aqui](https://redis.io/docs/latest/operate/rc/rc-quickstart/)
- 
 ## Dados Prioritariamente em Memória
 
 - `SET msg alo`
@@ -78,7 +74,7 @@ EXPIRE MENSAGEM 10
 
 - Uma única chave pode ter mais de um valor associado
 - Novos valores são adicionados à direita da lista (item 1 -> item 2 -> item n) com `RPUSH` ou à esquerda com `LPUSH`
-- Valores são removidos da esquerda com o `LPOP`
+- Valores são removidos da esquerda com o `LPOP` ou da direita com o `RPOP`
 - Para listar todos os valores utilizar o `LRANGE`
 - O índice de um valor pode ser obtido por meio do `LINDEX`
 - `LTRIM` remove elementos de uma lista fora de um intervalo definido
@@ -147,10 +143,12 @@ HDEL SP;BH empresa
 - ZSets se assemelham aos Hashes mas as chaves (membros) são únicas e os valores (scores) devem ser apenas números
 - Itens podem ser acessados de maneira ordenada
 - Principais operações:
+  - `ZADD`: cria um novo membro para o conjunto
+  - `ZINCRBY`: incrementa o score de um membro em determinada quantidade
   - `ZREM`: remove membros
   - `ZCARD`: retorna o número de membros
   - `ZCOUNT`: retorna a quantidade de membros com o score entre os parâmetros informados
-  - `ZRANK`: retorna a posição do membro
+  - `ZRANK`: retorna a posição do membro de acordo com o seu score
   - `ZSCORE`: retorna o score de um membro
   - `ZRANGEBYSCORE`: retorna os membros cujo score estejam entre determinado intervalo
 
@@ -184,6 +182,181 @@ XADD eventos * tipo click
 
 ## Use Cases
 
+## Eleição das Cores
+- Criar uma aplicação nodejs para exibir três cores em uma página web e permitir que os usuários votem em uma determinada cor e armazenando o voto em um banco de dados **Redis**
+#### Instruções
+- Instalar o **Redis** no [Docker Playground](https://labs.play-with-docker.com/) e iniciar o servidor
+```shell
+apk add redis
+redis-server
+```
+- Iniciar uma nova instância, instalar o **Redis**, para utilizar o `redis-cli` e criar a estrutura de votação inicial com os valores zerados
+```shell
+redis-cli -h <IP_SERVIDOR>
+zadd votacao 0 verde 0 amarelo 0 vermelho
+```
+- Iniciar uma nova instância para instalar a aplicação `nodejs`
+```shell
+apk add node npm
+apk add nodejs npm
+mkdir app
+cd app
+mkdir public
+touch public/index.html
+touch server.js
+npm init -y
+npm install --save express path
+```
+- Clicar no botão **EDITOR**, selecionar o arquivo `public/index.html` e colar o código abaixo
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Seleção de Cores</title>
+    <style>
+        body {
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .quadrado {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .quadrado:hover {
+            transform: scale(1.1);
+        }
+
+        .verde {
+            background-color: green;
+        }
+
+        .amarelo {
+            background-color: yellow;
+        }
+
+        .vermelho {
+            background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="quadrado verde" onclick="registrarCor('verde')"></div>
+        <div class="quadrado amarelo" onclick="registrarCor('amarelo')"></div>
+        <div class="quadrado vermelho" onclick="registrarCor('vermelho')"></div>
+    </div>
+
+    <script>
+        function registrarCor(cor) {
+            fetch(`/registrar/cor=${cor}`)
+                .then(response => response.text())
+                .then(data => console.log(data));
+        }
+    </script>
+</body>
+
+</html>
+```
+- Editar o arquivo `server.js` e colar o código abaixo
+```javascript
+const express = require('express');
+const path = require('path');
+
+const app = express();
+const port = 3000;
+
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Endpoint para registrar a cor
+app.get('/registrar/cor=:cor', async (req, res) => {
+    const cor = req.params.cor;
+    console.log(`Cor selecionada: ${cor}`);
+    res.send(`Cor ${cor} registrada com sucesso!`);
+});
+
+app.listen(port, async () => {
+    console.log(`Servidor rodando em http://localhost:${port}`);
+});
+```
+- Executar a aplicação
+```shell
+node server.js
+```
+- Para interromper a execução basta pressionar `ctrl + c`
+- Instalar o pacote de integração *nodejs* com **Redis**
+```shell
+npm install redis --save
+```
+- Editar o arquivo `server.js` e importar o pacote `redis`
+```javascript
+const redis = require('redis');
+```
+- Declarar uma variável global para referenciar a conexão com o **Redis**
+```javascript
+let cli = null
+```
+- Efetuar a conexão
+```javascript
+app.listen(port, async () => {
+    
+    cli = redis.createClient({
+        socket: {
+            host: '192.168.0.19',
+            port: 6379
+        }
+    });
+    
+    cli.on("error", function (error) {
+        console.error(error);
+    });
+    
+    await cli.connect();
+    
+    console.log('conectado', cli.isOpen);
+    var ret = await cli.ping();
+    console.log(ret)
+    
+    console.log(`Servidor rodando em http://localhost:${port}`);
+
+});
+```
+- Implementar a lógica para incrementar os votos
+```javascript
+app.get('/registrar/cor=:cor', async (req, res) => {
+    const cor = req.params.cor;
+    console.log(`Cor selecionada: ${cor}`);
+    
+    const total = await cli.zIncrBy('votacao', 1, cor);
+    console.log(`Total votos: ${total}`);
+    
+    res.send(`Cor ${cor} registrada com sucesso!`);
+});
+```
+- Acompanhar a votação
+```shell
+zrange votacao 0 3 withscores
+zrevrange votacao 0 0 withscores
+```
+- **Exercício** - implementar a lógica para permitir que somente seja permitido um voto por *IP*
+    - Dica: para obter o IP que acompanha uma requisição utilizar `req.ip`
 ## Integração Aplicações (Nodejs)
 
 - Criar uma pasta `single-signon`
