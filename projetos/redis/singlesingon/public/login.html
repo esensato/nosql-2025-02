@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tela de Login</title>
+    <style>
+        :root {
+            --bg: #f3f6fb;
+            --card: #ffffff;
+            --accent: #3b82f6;
+            --muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            background: linear-gradient(180deg, var(--bg), #eef2ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Card central */
+        .login-card {
+            width: min(420px, 92vw);
+            background: var(--card);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 8px 30px rgba(16, 24, 40, 0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #0f172a
+        }
+
+        p.subtitle {
+            margin: 0;
+            color: var(--muted);
+            font-size: 0.95rem
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px
+        }
+
+        label {
+            font-size: 0.875rem;
+            color: #0f172a
+        }
+
+        select,
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            border: 1px solid #e6edf3;
+            border-radius: 12px;
+            outline: none;
+            transition: box-shadow .15s, border-color .15s;
+        }
+
+        input[type="text"]:focus,
+        select:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.12);
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 6px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 16px;
+            font-size: 1rem;
+            border-radius: 12px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.18);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(1px)
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-card" role="main">
+        <form action="/login" method="post" autocomplete="on">
+            <div>
+                <label for="username">Usuário</label>
+                <input id="username" name="username" type="text" required placeholder="seu usuário" />
+            </div>
+
+            <div>
+                <label for="password">Senha</label>
+                <input id="password" name="password" type="password" required placeholder="sua senha" />
+            </div>
+
+            <div>
+                <label for="corfrente">Cor da frente</label>
+                <select id="corfrente" name="corfrente">
+                    <option>Branco</option>
+                    <option>Preto</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="corfundo">Cor de fundo</label>
+                <select id="corfundo" name="corfundo">
+                    <option>Azul</option>
+                    <option>Amarelo</option>
+                    <option>Verde</option>
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit">Entrar</button>
+            </div>
+        </form>
+    </main>
+</body>
+
+</html>
