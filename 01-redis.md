@@ -163,23 +163,22 @@ HDEL SP;BH empresa
 - É possível armazenar coordenadas geográficas (latitude / longitude)
 - O comando `GEOADD` adiciona uma coordenada
 
-```
-> GEOADD bikes:rentable -122.27652 37.805186 station:1
-> GEOADD bikes:rentable -122.2674626 37.8062344 station:2
-> GEOADD bikes:rentable -122.2469854 37.8104049 station:3
-
+```bash
+GEOADD bikes:rentable -122.27652 37.805186 station:1
+GEOADD bikes:rentable -122.2674626 37.8062344 station:2
+GEOADD bikes:rentable -122.2469854 37.8104049 station:3
 ```
 - Pode-se consultar coordenadas com base em um raio de distância:
-```
+```bash
 GEOSEARCH bikes:rentable FROMLONLAT -122.2612767 37.7936847 BYRADIUS 5 km WITHDIST
 ```
 ## Streams
-
+- Permite criar *streams* de dados síncronos (* gera o id do evento automaticamente)
 ```
 XREAD BLOCK 0 STREAMS eventos $
 XADD eventos * tipo click
 ```
-
+***
 ## Use Cases
 
 ## Eleição das Cores
@@ -280,7 +279,6 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const port = 3000;
 
 // Servir arquivos estáticos (HTML, CSS, JS)
 app.use(express.static(path.join(__dirname, 'public')));
@@ -292,8 +290,8 @@ app.get('/registrar/cor=:cor', async (req, res) => {
     res.send(`Cor ${cor} registrada com sucesso!`);
 });
 
-app.listen(port, async () => {
-    console.log(`Servidor rodando em http://localhost:${port}`);
+app.listen(3000, async () => {
+    console.log('Servidor rodando...');
 });
 ```
 - Executar a aplicação
@@ -315,7 +313,7 @@ let cli = null
 ```
 - Efetuar a conexão (atualizar o `<IP_SERVIDOR>`)
 ```javascript
-app.listen(port, async () => {
+app.listen(3000, async () => {
     
     cli = redis.createClient({
         socket: {
@@ -334,7 +332,7 @@ app.listen(port, async () => {
     var ret = await cli.ping();
     console.log(ret)
     
-    console.log(`Servidor rodando em http://localhost:${port}`);
+    console.log('Servidor rodando...');
 
 });
 ```
@@ -357,7 +355,262 @@ zrevrange votacao 0 0 withscores
 ```
 - **Exercício** - implementar a lógica para permitir que somente seja permitido um voto por *IP*
     - Dica: para obter o IP que acompanha uma requisição utilizar `req.ip`
+## Mural de Mensagens
+- Instalar as dependências
+```bash
+apk add nodejs npm
+mkdir mural-app
+cd mural-app
+npm init -y
+npm install express redis body-parser
+mkdir public
+touch public/index.html
+touch public/mensagens.html
+touch public/style.css
+touch server.js
+```
+- *Backend* para receber as mensagems e exibir as mensagens enviadas (arquivo `server.js`)
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const redis = require('redis');
+const path = require('path');
 
+const app = express();
+let cli = null;
+
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.post('/mensagem', async (req, res) => {
+    const { apelido, mensagem } = req.body;
+    res.json({ status: 'Mensagem enviada!' });
+});
+
+app.get('/mensagens', async (req, res) => {
+    res.json({ mensagens: [{apelido: 'teste', mensagem: 'Mensagem teste'}], lastId: 1 });
+});
+
+app.listen(3000, () => console.log('Servidor rodando...'));
+```
+- Incluir a página para envio das mensagens (arquivo `public/index.html`)
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Enviar Mensagem</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <input type="text" id="apelido" placeholder="Digite seu apelido" />
+    <textarea id="mensagem" rows="5" placeholder="Digite sua mensagem"></textarea>
+    <button onclick="enviarMensagem()">Enviar Mensagem</button>
+  </div>
+
+  <script>
+    async function enviarMensagem() {
+      const apelido = document.getElementById('apelido').value.trim();
+      const mensagem = document.getElementById('mensagem').value.trim();
+
+      const res = await fetch('/mensagem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apelido, mensagem })
+      });
+
+      const data = await res.json();
+      alert(data.status || data.error);
+      document.getElementById('mensagem').value = '';
+    }
+  </script>
+</body>
+</html>
+```
+- Tela para recebimento das mensagens (arquivo `public/mensagens.html`)
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mensagens</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <div id="lista-mensagens" class="mensagens"></div>
+  </div>
+
+  <script>
+    let lastId = '0';
+    async function buscarMensagens() {
+      try {
+        const res = await fetch(`/mensagens?lastId=${lastId}`);
+        const data = await res.json();
+
+        data.mensagens.forEach(msg => {
+          const div = document.createElement('div');
+          div.classList.add('mensagem');
+          div.innerText = `${msg.apelido}: ${msg.mensagem}`;
+          document.getElementById('lista-mensagens').appendChild(div);
+        });
+
+        if (data.mensagens.length > 0) {
+          lastId = data.lastId;
+          const container = document.getElementById('lista-mensagens');
+          container.scrollTop = container.scrollHeight;
+        }
+
+      } catch (err) {
+        console.error('Erro ao buscar mensagens:', err);
+      }
+    }
+
+    setInterval(buscarMensagens, 5000);
+    buscarMensagens();
+  </script>
+</body>
+</html>
+```
+- Folha de estilos (arquivo `public/style.css`)
+```css
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  width: 400px;
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+input, textarea, button {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  border: none;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.mensagens {
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px;
+  background-color: #fafafa;
+}
+
+.mensagem {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  background-color: #e0f7fa;
+}
+```
+- Efetuar a conexão (atualizar o `<IP_SERVIDOR>`)
+```javascript
+app.listen(3000, async () => {
+    
+    cli = redis.createClient({
+        socket: {
+            host: '<IP_SERVIDOR>',
+            port: 6379
+        }
+    });
+    
+    cli.on("error", function (error) {
+        console.error(error);
+    });
+    
+    await cli.connect();
+    
+    console.log('conectado', cli.isOpen);
+    var ret = await cli.ping();
+    console.log(ret)
+    
+    console.log('Servidor rodando...');
+
+});
+```
+- Implementar o envio das mensagens
+```javascript
+app.post('/mensagem', async (req, res) => {
+  const { apelido, mensagem } = req.body;
+  try {
+    await cli.xAdd('mensagens', '*', {
+      apelido,
+      mensagem
+    });
+    res.json({ status: 'Mensagem enviada!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao enviar mensagem.' });
+  }
+});
+```
+- Implementar o recebimento das mensagens
+```javascript
+app.get('/mensagens', async (req, res) => {
+  const lastId = req.query.lastId || '$';
+
+  try {
+    const data = await cli.xRead(
+      {
+        key: 'mensagens',
+        id: lastId
+      },
+      {
+        BLOCK: 0
+      }
+    );
+
+    if (!data) {
+      return res.json({ mensagens: [], lastId });
+    }
+
+    const messages = data[0].messages.map(msg => ({
+      id: msg.id,
+      apelido: msg.message.apelido,
+      mensagem: msg.message.mensagem
+    }));
+
+    const newLastId = messages[messages.length - 1].id;
+
+    res.json({ mensagens: messages, lastId: newLastId });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Erro ao ler mensagens.' });
+  }
+});
+```
 ## Single Signon
 
 - Criar uma aplicação nodejs com a seguinte lógica de negócio:
