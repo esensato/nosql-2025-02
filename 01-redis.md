@@ -196,7 +196,6 @@ zadd votacao 0 verde 0 amarelo 0 vermelho
 ```
 - Iniciar uma nova instância para instalar a aplicação `nodejs`
 ```shell
-apk add node npm
 apk add nodejs npm
 mkdir app
 cd app
