@@ -906,7 +906,6 @@ app.use(cookieParser())
 
 </html>
 ```
-***
 ## Exercício
 - Utilizando o código *frontend* abaixo, implementar com o **Redis** um carrinho de compras para uma cafeteria
 - Efetuar o *download* das imagens contidas na pasta `img` (acessar [AQUI](https://github.com/esensato/nosql-2025-02/tree/main/img))
