@@ -906,21 +906,208 @@ app.use(cookieParser())
 
 </html>
 ```
-- **Exercício**: Criar uma página para o usuário selecionar um produto de uma loja de acessórios de informática(Mouse, Teclado, Notebook, Impressora) e informar a quantidade, respectivamente. Montar um carrinho de compra em **Redis** para armazenar os dados informados (mais de um produto pode ser adicionado a cada momento). Supor que o usuário seja identificado por `usuarioteste`
+***
+## Exercício
+- Utilizando o código *frontend* abaixo, implementar com o **Redis** um carrinho de compras para uma cafeteria
+- Arquivo `style.css`
+```css
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f7f7f7;
+}
 
-## Arquivo de Configuração
+.menu {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+}
 
-- **Redis** pode ser iniciado com configurações específicas `redis-server redis.conf`
+h1 {
+    text-align: center;
+}
 
-## Configurando Persistência
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 10px 0;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.item img {
+    width: 100px;
+    height: 100px;
+    object-fit: fill;
+    border-radius: 8px;
+}
+
+.item-info {
+    flex: 1;
+    margin-left: 10px;
+}
+
+.item-info h3 {
+    margin: 0;
+}
+
+.price {
+    font-weight: bold;
+}
+
+input[type="number"] {
+    width: 50px;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #4caf50;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #45a049;
+}
+```
+- Arquivo `index.html`
+```html
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Cafeteria</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="menu">
+        <h1>Cafés</h1>
+
+        <div class="item">
+            <img src="super_coffee.png" alt="Super Coffee">
+            <div class="item-info">
+                <h3>Super Coffee</h3>
+                <span class="price" data-price="4.50">R$ 4.50</span>
+            </div>
+            <input type="number" min="0" value="0" class="qty">
+        </div>
+
+        <div class="item">
+            <img src="mocha_delicious.png" alt="Mocha Delicious">
+            <div class="item-info">
+                <h3>Mocha Delicious</h3>
+                <span class="price" data-price="4.80">R$ 4.80</span>
+            </div>
+            <input type="number" min="0" value="0" class="qty">
+        </div>
+
+        <div class="item">
+            <img src="latte_love.png" alt="Latte Love">
+            <div class="item-info">
+                <h3>Latte Love</h3>
+                <span class="price" data-price="4.20">R$ 4.20</span>
+            </div>
+            <input type="number" min="0" value="0" class="qty">
+        </div>
+
+        <button id="confirmar">Confirmar Compra</button>
+    </div>
+
+    <script>
+        document.getElementById("confirmar").addEventListener("click", () => {
+            const items = [];
+            document.querySelectorAll(".item").forEach((el, idx) => {
+                const nome = el.querySelector("h3").innerText;
+                const preco = parseFloat(el.querySelector(".price").dataset.price);
+                const qtd = parseInt(el.querySelector(".qty").value);
+                if (qtd > 0) {
+                    items.push({ nome, quantidade: qtd, preco });
+                }
+            });
+
+            fetch("/pedido", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ itens: items })
+            }).then(r => alert("Pedido enviado!"))
+                .catch(e => alert("Erro ao enviar pedido"));
+        });
+    </script>
+</body>
+
+</html>
+```
+***
+
+## Persistência de Dados
+- A persistência de dados em disco não é a prioridade do **Redis** (*Durability* - Relacional ACID)
+- Contudo, existem dois tipos de persistência
+    - RDB (Redis Database Backup): criação de *snapshots* (padrão)
+    - AOF (Append Only File): registro de cada operação em um arquivo de *log*
+- Executar o laboratório abaixo para verificar que os dados podem ser perdidos pois existem primariamente em memória
+```bash
+redis-server --protected-mode no &
+redis-cli
+set msg "Teste Persistência"
+exit
+# Recuperar o valor da chave msg com sucesso
+redis-cli
+get msg
+exit
+# Shutdown inesperado do servidor (obtem o numero do processo e aborta o servidor forçado)
+ps -ef | grep redis 
+kill -9 ID_PROCESSO
+# Iniciar novamente o servidor e o cliente
+redis-server --protected-mode no &
+redis-cli
+# Tentar recuperar o valor da chave msg... (não retorna o valor associado - nil)
+get msg
+```
+- Agora efetuar o *shutdown* esperado do servidor
+```bash
+set msg "Mensagem salva"
+# Efetuar o shutdown do modo esperado e observar a mensagem de persistência dos dados (DB saved on disk)
+shutdown
+# Iniciar novamente o servidor e recuperar o valor da chave salva
+redis-server --protected-mode no &
+redis-cli
+get msg
+exit
+```
+- Verificar a geração de um arquivo `dump.rdb` com os valores de chaves persistidos
+- Pode-se forçar o *snapshot* com o comando `save`
+## Configurações Redis
+- As configurações, por padrão, são definidas no arquivo `redis.conf` no diretório `/etc`
+- O **Redis** pode ser iniciado com configurações específicas `redis-server redis.conf`
+
+### Configurando Persistência
 
 - Criar um arquivo `redis.conf`
 - Informar o parâmetro `dir` para apontar para o diretório de *snapshot*
 - Informar o parâmetro `dbfilename` para o nome do arquivo de *snapshot*
-- Configurar o *snapshot* com `save 60 10`
-- Pode-se forçar o *snapshot* com o comando `save`
-- Outra forma é utilizando o AOF (Append Only File)
-- Basta definir o parâmetro `appendonly yes` e definir a periodicidade com `appendfsync` que pode ser: `aways`, `everysec` ou `no`
+- Configurar o *snapshot* com `save 60 10` (salva caso ocorram 10 mudanças em 60 segundos)
+```javascript
+protected-mode no
+dir /root
+dbfilename persistencia.rdb
+save 60 10
+```
+- Para usar o *AOF* basta definir o parâmetro `appendonly yes` e definir a periodicidade com `appendfsync` que pode ser: `aways`, `everysec` ou `no`
 
 ## Replicação com Container
 
