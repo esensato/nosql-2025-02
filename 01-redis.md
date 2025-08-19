@@ -187,7 +187,7 @@ XADD eventos * tipo click
 - Instalar o **Redis** no [Docker Playground](https://labs.play-with-docker.com/) e iniciar o servidor
 ```shell
 apk add redis
-redis-server
+redis-server --protected-mode no &
 ```
 - Iniciar uma nova instância, instalar o **Redis**, para utilizar o `redis-cli` e criar a estrutura de votação inicial com os valores zerados
 ```shell
