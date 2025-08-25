@@ -622,11 +622,6 @@ app.get('/mensagens', async (req, res) => {
 apk add redis
 redis-server
 ```
-- Iniciar uma nova instância, instalar o **Redis**, para utilizar o `redis-cli` e criar a estrutura de votação inicial com os valores zerados
-```shell
-redis-cli -h <IP_SERVIDOR>
-zadd votacao 0 verde 0 amarelo 0 vermelho
-```
 - Iniciar uma nova instância para instalar a aplicação `nodejs`
 ```shell
 apk add node npm
