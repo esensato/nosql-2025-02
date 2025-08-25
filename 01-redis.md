@@ -624,7 +624,6 @@ redis-server
 ```
 - Iniciar uma nova instância para instalar a aplicação `nodejs`
 ```shell
-apk add node npm
 apk add nodejs npm
 mkdir app
 cd app
