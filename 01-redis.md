@@ -631,7 +631,7 @@ mkdir public
 touch public/index.html
 touch server.js
 npm init -y
-npm install --save express path ejs cookie-parser
+npm install --save express path ejs cookie-parser redis
 ```
 - Clicar no botão **EDITOR**, selecionar o arquivo `public/login.html` e colar o código abaixo
 
@@ -788,25 +788,33 @@ npm install --save express path ejs cookie-parser
 
 </html>
 ```
-  - Incluir a página de login como pública
-
-```javascript
-app.use(express.static('public'))
-```
 - Criar os *endpoints*
 
-  ```javascript
-  app.get('/', (req, res) => {
-  })
-  app.post('/login', (req, res) => {
-  })
-  app.post('/perfil', (req, res) => {
-  })
-  app.get('/remove', (req, res) => {
-    res.clearCookie("tokencookie");
-    res.status(200).send('Cookie removido');
-  })
-  ```
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const redis = require('redis');
+const path = require('path');
+
+const app = express();
+let cli = null;
+
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+})
+app.post('/login', (req, res) => {
+})
+app.post('/perfil', (req, res) => {
+})
+app.get('/remove', (req, res) => {
+  res.clearCookie("tokencookie");
+  res.status(200).send('Cookie removido');
+})
+
+app.listen(3000, () => console.log('Servidor rodando...'));
+```
 - Criar a conexão com o **Redis** (alterar o `<IP_SERVIDOR>`)
 ```javascript
 
