@@ -1116,12 +1116,45 @@ graph LR;
 ```
 - Criar 3 instâncias do redis dentro do [Docker Playground](https://labs.play-with-docker.com/)
 - Iniciar uma das instâncias (nó master - IP_MASTER)
-  `redis-server --protected-mode no &`
-- Iniciar as instâncias do redis nos containers (slaves):
-- `redis-server --protected-mode no  --replicaof <IP_MASTER> 6379 &`
-- Criar uma chave no `master`
-- Consultar a chave nos `slaves`
+  `redis-server --protected-mode no`
+- Iniciar uma instância do redis como *slave*:
+- `redis-server --protected-mode no  --replicaof <IP_MASTER> 6379`
+- Em uma terceira instância, via `redis-cli -h <IP_MASTER_SLAVE>`
+    - Criar uma chave no `master`
+    - Consultar a chave nos `slaves`
 
+### Acessando Slaves
+- Instalar o *node*
+```bash
+apk add nodejs npm
+```
+Criar uma aplicação e adicionar as dependências
+```bash
+npm init -y
+npm install --save redis
+touch teste.js
+```
+- Via código é possível descobrir os *slaves* e efetuar a leitura dos dados a partir deles
+```javascript
+const redis = require('redis');
+const client = redis.createClient({socket:{ host: '192.168.0.12', port: 6379 }});
+
+client.on('error', console.error);
+
+async function listarSlaves() {
+  await client.connect();
+  const info = await client.sendCommand(['INFO', 'replication']);
+  const lines = info.split('\n');
+
+  const slaves = lines.filter(line => line.startsWith('slave'))
+
+  console.log('Slaves conectados:', slaves);
+  
+  await client.quit();
+}
+  
+listarSlaves();
+```
 ## Sentinel
 
 ```mermaid
@@ -1135,9 +1168,10 @@ graph LR;
 - Acessar a pasta home `cd ~`
 - Criar um arquivo de configuração `touch sentinel.conf` dentro da instância do **Sentinel**
 - Configurar o monitoramento dos nós no arquivo de configuração:
-  ```
+```bash
   port 26379
-  sentinel monitor master <IP1> 6379 2
+  # define quantos sentinels (quorum) devem concordar sobre a indisponibilidade do master
+  sentinel monitor master <IP1> 6379 1 
   sentinel down-after-milliseconds master 5000
   sentinel failover-timeout master 5000
   ```
@@ -1145,13 +1179,16 @@ graph LR;
   `redis-sentinel sentinel.conf &`
 - Informações sentinel:
 
-  ```
+```bash
   redis-cli -p 26379
   info sentinel
   sentinel get-master-addr-by-name master
   sentinel replicas master
   ```
-
+- Para descobrir qual é o master atual em uma única linha
+```bash
+redis-cli -p 26379 sentinel get-master-addr-by-name mymaster
+```
 - Nos nós slaves alterar o IP para apontar para o master
 - Alterar os nomes dos nós nas demais configurações
 - Iniciar o master: `redis-server /etc/redis.conf &`
@@ -1161,6 +1198,42 @@ graph LR;
 - No master, acessar o sentinel: `redis-cli -p 5000`
 - Verificar o master atual: `sentinel master mymaster`
 - Parar o master: `redis-cli -p 6379 DEBUG sleep 30`
+
+### Aplicação Nodejs
+- A aplicação *nodejs* agora deve conectar-se ao *sentinel* ao invés de se conectar diretamente no nó *master*
+```javascript
+const { createClient } = require('redis');
+
+async function descobrirMaster() {
+  const sentinelClient = createClient({ url: 'redis://127.0.0.1:26379' });
+  await sentinelClient.connect();
+
+  // Consulta o master monitorado
+  const masterInfo = await sentinelClient.sendCommand([
+    'SENTINEL', 'get-master-addr-by-name', 'mymaster'
+  ]);
+
+  const [masterIP, masterPort] = masterInfo;
+  console.log('Master atual:', masterIP, masterPort);
+
+  // Conecta ao master
+  const masterClient = createClient({
+    socket: { host: masterIP, port: parseInt(masterPort) }
+  });
+  await masterClient.connect();
+
+  // Teste de SET e GET
+  await masterClient.set('msg', 'Teste');
+  const valor = await masterClient.get('msg');
+  console.log('Valor lido do master via Sentinel:', valor);
+
+  await masterClient.quit();
+  await sentinelClient.quit();
+}
+
+descobrirMaster();
+
+```
 
 ## Clusters
 
