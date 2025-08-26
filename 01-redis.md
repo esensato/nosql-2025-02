@@ -628,10 +628,12 @@ apk add nodejs npm
 mkdir app
 cd app
 mkdir public
-touch public/index.html
+mkdir views
+touch public/login.html
+touch views/principal.ejs
 touch server.js
 npm init -y
-npm install --save express path ejs cookie-parser redis
+npm install --save express path ejs cookie-parser redis jsonwebtoken
 ```
 - Clicar no botão **EDITOR**, selecionar o arquivo `public/login.html` e colar o código abaixo
 
@@ -795,33 +797,32 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const redis = require('redis');
 const path = require('path');
+const cookieParser = require('cookie-parser')
+var jwt = require('jsonwebtoken')
 
 const app = express();
 let cli = null;
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cookieParser())
+app.use(express.urlencoded({ extended: true }))
+app.set('view engine', 'ejs')
 
 app.get('/', (req, res) => {
+
 })
+
 app.post('/login', (req, res) => {
+
 })
-app.post('/perfil', (req, res) => {
-})
+
 app.get('/remove', (req, res) => {
   res.clearCookie("tokencookie");
   res.status(200).send('Cookie removido');
 })
 
-app.listen(3000, () => console.log('Servidor rodando...'));
-```
-- Criar a conexão com o **Redis** (alterar o `<IP_SERVIDOR>`)
-```javascript
-
-const redis = require('redis');
-let cli = null
-
-app.listen(port, async () => {
+app.listen(3000, async () => {
     
     cli = redis.createClient({
         socket: {
@@ -840,59 +841,48 @@ app.listen(port, async () => {
     var ret = await cli.ping();
     console.log(ret)
     
-    console.log(`Servidor rodando em http://localhost:${port}`);
+    console.log('Servidor rodando...');
 
 });
 
 ```
-- Adicionar o tratamento de *cookies*
-```javascript
-var cookieParser = require('cookie-parser')
-app.use(cookieParser())
-```
 - Verificar se já existe o *token* armazenado na forma de *cookie*
 
-  ```javascript
-  app.get('/', (req, res) => {
-  var tokenCookie = req.cookies.tokencookie
-  if (tokenCookie) {
-  cli.hgetall(tokenCookie, (err, data) => {
-  res.render("home", {"corfrente": data.corFrente, "corfundo": data.corFundo});
-  })
-  } else {
-  res.sendFile(__dirname + "/public/login.html");
-  }
-  })
-  ```
-- Habilitando dados enviados via formulário
-  ```javascript
-  app.use(express.urlencoded({ extended: true }))
-  ```
-- Habilitar a geraçao de **tokens**
-  ```javascript
-  var jwt = require('jsonwebtoken')
-  ```
+```javascript
+app.get('/', async (req, res) => {
+
+    var tokenCookie = req.cookies.tokencookie
+    if (tokenCookie) {
+        const data = await cli.hgetall(tokenCookie);
+        res.render("principal", {"corfrente": data.corFrente, "corfundo": data.corFundo});
+    } else {
+        res.sendFile(__dirname + "/public/login.html");
+    }
+})
+```
 - Recebendo o *login* e *sennha* do formulário
   ```javascript
-  app.post('/login', (req, res) => {
-  var username = req.body.username
-  var senha = req.body.senha
-  if (username == 'teste' && senha == 'teste') {
-  var token = jwt.sign({ username }, 'minhachavesecreta')
-  cli.hset([token, "corFrente", "#", "corFundo", "#"], (err, res) => {
-  })
-  res.cookie('tokencookie',token)
-  res.sendFile(__dirname + "/public/perfil.html");
-  } else {
-  res.sendFile(__dirname + "/public/login.html");
-  }
+  app.post('/login', async (req, res) => {
+
+      const username = req.body.username;
+      const senha = req.body.password;
+      const corFrente = req.body.corfrente;
+      const corFundo = req.body.corfundo;
+
+      if (username == 'teste' && senha == 'teste') {
+          const token = jwt.sign({ username }, 'minhachavesecreta')
+          await cli.hSet(token, {
+              corFrente: `$corFrente`,
+              corFundo: `$corFrente`
+          });
+          res.cookie('tokencookie',token)
+          res.render("principal", {"corfrente": data.corFrente, "corfundo": data.corFundo});
+      } else {
+          res.sendFile(__dirname + "/public/login.html");
+      }
   })
   ```
-- Habilitar o **ejs**
-  ```javascript
-  app.set('view engine', 'ejs')
-  ```
-- Criar a página `home.ejs` dentro de `views`
+- Criar a página `principal.ejs` dentro de `views`
 
 ```html
 <html>
@@ -1110,7 +1100,7 @@ save 60 10
 ```
 - Para usar o *AOF* basta definir o parâmetro `appendonly yes` e definir a periodicidade com `appendfsync` que pode ser: `aways`, `everysec` ou `no`
 
-## Replicação com Container
+## Replicação
 
 ```mermaid
 graph LR;
