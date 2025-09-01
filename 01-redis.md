@@ -879,7 +879,7 @@ app.get('/', async (req, res) => {
               corFundo: `$corFrente`
           });
           res.cookie('tokencookie',token)
-          res.render("principal", {"corfrente": data.corFrente, "corfundo": data.corFundo});
+        res.render("principal", {"corfrente": corFrente, "corfundo": corFundo});
       } else {
           res.sendFile(__dirname + "/public/login.html");
       }
