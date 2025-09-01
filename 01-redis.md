@@ -620,7 +620,7 @@ app.get('/mensagens', async (req, res) => {
 - Instalar o **Redis** no [Docker Playground](https://labs.play-with-docker.com/) e iniciar o servidor
 ```shell
 apk add redis
-redis-server
+redis-server --protected-mode no &
 ```
 - Iniciar uma nova instância para instalar a aplicação `nodejs`
 ```shell
@@ -850,17 +850,20 @@ app.listen(3000, async () => {
 
 ```javascript
 app.get('/', async (req, res) => {
-
     var tokenCookie = req.cookies.tokencookie
     if (tokenCookie) {
         const data = await cli.hgetall(tokenCookie);
-        res.render("principal", {"corfrente": data.corFrente, "corfundo": data.corFundo});
+        if (data) {
+            res.render("principal", {"corfrente": data.corFrente, "corfundo": data.corFundo});
+        } else {
+            res.sendFile(__dirname + "/public/login.html");
+        }
     } else {
         res.sendFile(__dirname + "/public/login.html");
     }
 })
 ```
-- Recebendo o *login* e *sennha* do formulário
+- Recebendo o *login* e *senha* do formulário
   ```javascript
   app.post('/login', async (req, res) => {
 
@@ -1230,7 +1233,7 @@ descobrirMaster();
 ## Clusters
 
 - Criar um arquivo `redis.conf` para cada nó do cluster com a configuração abaixo:
-```
+```bash
 cluster-enabled yes
 cluster-config-file nodes.conf
 cluster-node-timeout 5000
@@ -1238,7 +1241,7 @@ appendonly yes
 ```
 - O cluster é criado com
 
-```
+```bash
 redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
 --cluster-replicas 1
