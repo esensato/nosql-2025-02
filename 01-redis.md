@@ -767,8 +767,8 @@ npm install --save express path ejs cookie-parser redis jsonwebtoken
             <div>
                 <label for="corfrente">Cor da frente</label>
                 <select id="corfrente" name="corfrente">
-                    <option>Branco</option>
-                    <option>Preto</option>
+                    <option value="white">Branco</option>
+                    <option value="black">Preto</option>
                 </select>
             </div>
 
@@ -875,8 +875,8 @@ app.get('/', async (req, res) => {
       if (username == 'teste' && senha == 'teste') {
           const token = jwt.sign({ username }, 'minhachavesecreta')
           await cli.hSet(token, {
-              corFrente: `$corFrente`,
-              corFundo: `$corFrente`
+              corFrente: corFrente,
+              corFundo: corFundo
           });
           res.cookie('tokencookie',token)
         res.render("principal", {"corfrente": corFrente, "corfundo": corFundo});
