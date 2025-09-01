@@ -20,7 +20,6 @@ graph TD;
 ```
 ## Instalação local
 - Instruções para [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials) localmente
-- 
 ## Inslatando no Linux (Alpine)
 
 - [Docker Playground](https://labs.play-with-docker.com/)
