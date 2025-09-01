@@ -1,0 +1,1322 @@
+{
+    "endereco": "Rua Terra 943",
+    "bairro": "França",
+    "cidade": "Rio de Janeiro",
+    "tipo": "comercial",
+    "aluguel": 1724
+}
+{
+    "endereco": "Rua Mercúrio 67",
+    "bairro": "Portugal",
+    "cidade": "Porto Alegre",
+    "tipo": "temporada",
+    "aluguel": 1076,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 2,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Urano 830",
+    "bairro": "Brasil",
+    "cidade": "Rio de Janeiro",
+    "tipo": "temporada",
+    "aluguel": 4166,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": []
+}
+{
+    "endereco": "Rua Vênus 840",
+    "bairro": "Argentina",
+    "cidade": "Belém",
+    "tipo": "comercial",
+    "aluguel": 1262
+}
+{
+    "endereco": "Rua Terra 796",
+    "bairro": "Alemanha",
+    "cidade": "Brasília",
+    "tipo": "residencial",
+    "aluguel": 3538,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Terra 499",
+    "bairro": "França",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 1868
+}
+{
+    "endereco": "Rua Netuno 693",
+    "bairro": "Brasil",
+    "cidade": "Belém",
+    "tipo": "residencial",
+    "aluguel": 1223,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Saturno 786",
+    "bairro": "EUA",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 2744,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "academia",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 367",
+    "bairro": "Alemanha",
+    "cidade": "Salvador",
+    "tipo": "comercial",
+    "aluguel": 1798
+}
+{
+    "endereco": "Rua Mercúrio 919",
+    "bairro": "Brasil",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 1184
+}
+{
+    "endereco": "Rua Vênus 937",
+    "bairro": "França",
+    "cidade": "Brasília",
+    "tipo": "temporada",
+    "aluguel": 1478,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "jardim",
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Urano 500",
+    "bairro": "Portugal",
+    "cidade": "Brasília",
+    "tipo": "comercial",
+    "aluguel": 2822
+}
+{
+    "endereco": "Rua Saturno 820",
+    "bairro": "Alemanha",
+    "cidade": "Fortaleza",
+    "tipo": "residencial",
+    "aluguel": 1663,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "academia",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Urano 543",
+    "bairro": "Alemanha",
+    "cidade": "Belém",
+    "tipo": "temporada",
+    "aluguel": 2878,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "churrasqueira",
+        "academia",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Vênus 686",
+    "bairro": "Alemanha",
+    "cidade": "Fortaleza",
+    "tipo": "comercial",
+    "aluguel": 2798
+}
+{
+    "endereco": "Rua Mercúrio 173",
+    "bairro": "Brasil",
+    "cidade": "São Paulo",
+    "tipo": "residencial",
+    "aluguel": 3610,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 1,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "piscina",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Saturno 963",
+    "bairro": "França",
+    "cidade": "São Paulo",
+    "tipo": "temporada",
+    "aluguel": 1237,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 2,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 197",
+    "bairro": "Itália",
+    "cidade": "Fortaleza",
+    "tipo": "comercial",
+    "aluguel": 2814
+}
+{
+    "endereco": "Rua Marte 564",
+    "bairro": "Brasil",
+    "cidade": "Salvador",
+    "tipo": "comercial",
+    "aluguel": 2974
+}
+{
+    "endereco": "Rua Netuno 478",
+    "bairro": "Alemanha",
+    "cidade": "Belém",
+    "tipo": "comercial",
+    "aluguel": 4355
+}
+{
+    "endereco": "Rua Marte 209",
+    "bairro": "Brasil",
+    "cidade": "Salvador",
+    "tipo": "temporada",
+    "aluguel": 2996,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 3,
+        "vagas": 3
+    }
+}
+{
+    "endereco": "Rua Júpiter 318",
+    "bairro": "Japão",
+    "cidade": "Belém",
+    "tipo": "residencial",
+    "aluguel": 3949,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 2,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 326",
+    "bairro": "Brasil",
+    "cidade": "Curitiba",
+    "tipo": "comercial",
+    "aluguel": 3531
+}
+{
+    "endereco": "Rua Urano 98",
+    "bairro": "Espanha",
+    "cidade": "Brasília",
+    "tipo": "residencial",
+    "aluguel": 1099,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Marte 821",
+    "bairro": "França",
+    "cidade": "Fortaleza",
+    "tipo": "residencial",
+    "aluguel": 4229,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 4,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Marte 329",
+    "bairro": "Brasil",
+    "cidade": "Salvador",
+    "tipo": "temporada",
+    "aluguel": 2907,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "jardim",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Urano 86",
+    "bairro": "Portugal",
+    "cidade": "Manaus",
+    "tipo": "comercial",
+    "aluguel": 1187
+}
+{
+    "endereco": "Rua Júpiter 688",
+    "bairro": "Espanha",
+    "cidade": "Brasília",
+    "tipo": "comercial",
+    "aluguel": 2968
+}
+{
+    "endereco": "Rua Júpiter 118",
+    "bairro": "Japão",
+    "cidade": "Curitiba",
+    "tipo": "temporada",
+    "aluguel": 2232,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 1
+    }
+}
+{
+    "endereco": "Rua Marte 724",
+    "bairro": "Espanha",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 3099
+}
+{
+    "endereco": "Rua Mercúrio 125",
+    "bairro": "Argentina",
+    "cidade": "Porto Alegre",
+    "tipo": "temporada",
+    "aluguel": 3798,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 4,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia",
+        "churrasqueira",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Marte 959",
+    "bairro": "França",
+    "cidade": "Salvador",
+    "tipo": "residencial",
+    "aluguel": 3813,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 2,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 352",
+    "bairro": "Argentina",
+    "cidade": "Rio de Janeiro",
+    "tipo": "residencial",
+    "aluguel": 4178,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 2
+    }
+}
+{
+    "endereco": "Rua Urano 408",
+    "bairro": "Itália",
+    "cidade": "Salvador",
+    "tipo": "residencial",
+    "aluguel": 1858,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Terra 359",
+    "bairro": "Espanha",
+    "cidade": "Belém",
+    "tipo": "temporada",
+    "aluguel": 1977,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "piscina",
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Terra 649",
+    "bairro": "Brasil",
+    "cidade": "Curitiba",
+    "tipo": "temporada",
+    "aluguel": 2069,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 2,
+        "vagas": 2
+    },
+    "lazer": [
+        "jardim",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Urano 937",
+    "bairro": "Argentina",
+    "cidade": "Porto Alegre",
+    "tipo": "residencial",
+    "aluguel": 3170,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 3,
+        "vagas": 1
+    },
+    "lazer": [
+        "jardim",
+        "piscina",
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Vênus 566",
+    "bairro": "Portugal",
+    "cidade": "Belém",
+    "tipo": "temporada",
+    "aluguel": 2854,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 966",
+    "bairro": "Japão",
+    "cidade": "São Paulo",
+    "tipo": "residencial",
+    "aluguel": 3132,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Saturno 340",
+    "bairro": "Alemanha",
+    "cidade": "Salvador",
+    "tipo": "comercial",
+    "aluguel": 3989
+}
+{
+    "endereco": "Rua Júpiter 441",
+    "bairro": "Argentina",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 1129
+}
+{
+    "endereco": "Rua Urano 993",
+    "bairro": "Brasil",
+    "cidade": "Curitiba",
+    "tipo": "temporada",
+    "aluguel": 2379,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 2,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia",
+        "jardim",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Vênus 543",
+    "bairro": "Chile",
+    "cidade": "Fortaleza",
+    "tipo": "temporada",
+    "aluguel": 2836,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 986",
+    "bairro": "Brasil",
+    "cidade": "Porto Alegre",
+    "tipo": "temporada",
+    "aluguel": 2141,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 825",
+    "bairro": "Japão",
+    "cidade": "Salvador",
+    "tipo": "temporada",
+    "aluguel": 4316,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "jardim",
+        "piscina",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Vênus 827",
+    "bairro": "França",
+    "cidade": "Brasília",
+    "tipo": "comercial",
+    "aluguel": 1062
+}
+{
+    "endereco": "Rua Júpiter 855",
+    "bairro": "Alemanha",
+    "cidade": "Brasília",
+    "tipo": "comercial",
+    "aluguel": 4315
+}
+{
+    "endereco": "Rua Marte 605",
+    "bairro": "Alemanha",
+    "cidade": "Porto Alegre",
+    "tipo": "comercial",
+    "aluguel": 4044
+}
+{
+    "endereco": "Rua Júpiter 235",
+    "bairro": "Itália",
+    "cidade": "Recife",
+    "tipo": "temporada",
+    "aluguel": 2633,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Saturno 140",
+    "bairro": "Portugal",
+    "cidade": "Fortaleza",
+    "tipo": "residencial",
+    "aluguel": 1702,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Netuno 776",
+    "bairro": "Chile",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 4393,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "jardim",
+        "academia",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Terra 393",
+    "bairro": "Argentina",
+    "cidade": "Manaus",
+    "tipo": "residencial",
+    "aluguel": 1570,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Marte 975",
+    "bairro": "Argentina",
+    "cidade": "Salvador",
+    "tipo": "comercial",
+    "aluguel": 2802
+}
+{
+    "endereco": "Rua Netuno 668",
+    "bairro": "Brasil",
+    "cidade": "Recife",
+    "tipo": "residencial",
+    "aluguel": 3273,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 2,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira",
+        "jardim",
+        "piscina",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 490",
+    "bairro": "EUA",
+    "cidade": "Porto Alegre",
+    "tipo": "residencial",
+    "aluguel": 4583,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Vênus 732",
+    "bairro": "Chile",
+    "cidade": "Curitiba",
+    "tipo": "comercial",
+    "aluguel": 3727
+}
+{
+    "endereco": "Rua Terra 45",
+    "bairro": "Portugal",
+    "cidade": "Fortaleza",
+    "tipo": "residencial",
+    "aluguel": 4591,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Netuno 652",
+    "bairro": "Itália",
+    "cidade": "Curitiba",
+    "tipo": "comercial",
+    "aluguel": 1985
+}
+{
+    "endereco": "Rua Saturno 887",
+    "bairro": "Japão",
+    "cidade": "Porto Alegre",
+    "tipo": "comercial",
+    "aluguel": 4374
+}
+{
+    "endereco": "Rua Vênus 139",
+    "bairro": "Japão",
+    "cidade": "Recife",
+    "tipo": "residencial",
+    "aluguel": 4618,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "jardim",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Marte 672",
+    "bairro": "EUA",
+    "cidade": "Porto Alegre",
+    "tipo": "temporada",
+    "aluguel": 4511,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "piscina",
+        "jardim",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Netuno 384",
+    "bairro": "Japão",
+    "cidade": "São Paulo",
+    "tipo": "residencial",
+    "aluguel": 3616,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "churrasqueira",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Urano 769",
+    "bairro": "Alemanha",
+    "cidade": "Fortaleza",
+    "tipo": "residencial",
+    "aluguel": 4558,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "churrasqueira",
+        "jardim",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 400",
+    "bairro": "França",
+    "cidade": "Brasília",
+    "tipo": "residencial",
+    "aluguel": 2565,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Netuno 573",
+    "bairro": "Alemanha",
+    "cidade": "São Paulo",
+    "tipo": "temporada",
+    "aluguel": 1445,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 4,
+        "vagas": 3
+    },
+    "lazer": [
+        "jardim",
+        "academia",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Marte 459",
+    "bairro": "Japão",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 3826,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "academia",
+        "churrasqueira",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Marte 607",
+    "bairro": "Chile",
+    "cidade": "Rio de Janeiro",
+    "tipo": "temporada",
+    "aluguel": 2094,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Saturno 745",
+    "bairro": "Espanha",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 2955,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 1,
+        "vagas": 3
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Urano 610",
+    "bairro": "Chile",
+    "cidade": "Rio de Janeiro",
+    "tipo": "temporada",
+    "aluguel": 1644,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 4,
+        "vagas": 2
+    },
+    "lazer": [
+        "jardim",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Saturno 562",
+    "bairro": "Espanha",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 2911
+}
+{
+    "endereco": "Rua Urano 307",
+    "bairro": "EUA",
+    "cidade": "Recife",
+    "tipo": "temporada",
+    "aluguel": 4426,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "academia",
+        "piscina",
+        "jardim",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Vênus 847",
+    "bairro": "EUA",
+    "cidade": "Manaus",
+    "tipo": "comercial",
+    "aluguel": 2788
+}
+{
+    "endereco": "Rua Mercúrio 792",
+    "bairro": "Espanha",
+    "cidade": "Porto Alegre",
+    "tipo": "temporada",
+    "aluguel": 3453,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 147",
+    "bairro": "Itália",
+    "cidade": "São Paulo",
+    "tipo": "residencial",
+    "aluguel": 3413,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Vênus 211",
+    "bairro": "Brasil",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 1754
+}
+{
+    "endereco": "Rua Vênus 296",
+    "bairro": "EUA",
+    "cidade": "Brasília",
+    "tipo": "residencial",
+    "aluguel": 2815,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Netuno 66",
+    "bairro": "Espanha",
+    "cidade": "Recife",
+    "tipo": "comercial",
+    "aluguel": 3874
+}
+{
+    "endereco": "Rua Marte 189",
+    "bairro": "Japão",
+    "cidade": "Salvador",
+    "tipo": "temporada",
+    "aluguel": 2141,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 486",
+    "bairro": "Alemanha",
+    "cidade": "Porto Alegre",
+    "tipo": "comercial",
+    "aluguel": 2870
+}
+{
+    "endereco": "Rua Mercúrio 695",
+    "bairro": "Alemanha",
+    "cidade": "Curitiba",
+    "tipo": "temporada",
+    "aluguel": 1564,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "piscina",
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Netuno 538",
+    "bairro": "Japão",
+    "cidade": "Recife",
+    "tipo": "temporada",
+    "aluguel": 3073,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia",
+        "jardim",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Terra 461",
+    "bairro": "Portugal",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 4885,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Marte 474",
+    "bairro": "Alemanha",
+    "cidade": "Fortaleza",
+    "tipo": "temporada",
+    "aluguel": 2359,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 1,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 518",
+    "bairro": "Brasil",
+    "cidade": "Salvador",
+    "tipo": "temporada",
+    "aluguel": 3091,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Saturno 368",
+    "bairro": "Alemanha",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 3308,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 2
+    },
+    "lazer": [
+        "academia",
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Netuno 374",
+    "bairro": "Japão",
+    "cidade": "Manaus",
+    "tipo": "residencial",
+    "aluguel": 2485,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "academia",
+        "churrasqueira",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Netuno 868",
+    "bairro": "França",
+    "cidade": "Belém",
+    "tipo": "residencial",
+    "aluguel": 1039,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 1,
+        "vagas": 2
+    },
+    "lazer": [
+        "piscina",
+        "churrasqueira",
+        "jardim",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Terra 283",
+    "bairro": "Japão",
+    "cidade": "Manaus",
+    "tipo": "temporada",
+    "aluguel": 3331,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 3,
+        "vagas": 2
+    },
+    "lazer": [
+        "piscina",
+        "jardim",
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Júpiter 52",
+    "bairro": "Japão",
+    "cidade": "Brasília",
+    "tipo": "temporada",
+    "aluguel": 2694,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Mercúrio 878",
+    "bairro": "Itália",
+    "cidade": "Porto Alegre",
+    "tipo": "residencial",
+    "aluguel": 4059,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 1,
+        "vagas": 3
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia"
+    ]
+}
+{
+    "endereco": "Rua Saturno 523",
+    "bairro": "Brasil",
+    "cidade": "Porto Alegre",
+    "tipo": "residencial",
+    "aluguel": 3898,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 4,
+        "vagas": 1
+    }
+}
+{
+    "endereco": "Rua Saturno 926",
+    "bairro": "Alemanha",
+    "cidade": "Fortaleza",
+    "tipo": "comercial",
+    "aluguel": 3325
+}
+{
+    "endereco": "Rua Terra 94",
+    "bairro": "Itália",
+    "cidade": "Salvador",
+    "tipo": "residencial",
+    "aluguel": 3299,
+    "configuracao": {
+        "quartos": 4,
+        "banheiros": 2,
+        "vagas": 1
+    },
+    "lazer": [
+        "academia",
+        "jardim",
+        "piscina"
+    ]
+}
+{
+    "endereco": "Rua Terra 532",
+    "bairro": "Japão",
+    "cidade": "Brasília",
+    "tipo": "comercial",
+    "aluguel": 4586
+}
+{
+    "endereco": "Rua Netuno 294",
+    "bairro": "Chile",
+    "cidade": "Belém",
+    "tipo": "comercial",
+    "aluguel": 4410
+}
+{
+    "endereco": "Rua Vênus 451",
+    "bairro": "França",
+    "cidade": "Salvador",
+    "tipo": "residencial",
+    "aluguel": 2836,
+    "configuracao": {
+        "quartos": 1,
+        "banheiros": 3,
+        "vagas": 3
+    },
+    "lazer": [
+        "piscina",
+        "churrasqueira",
+        "academia",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Saturno 941",
+    "bairro": "Argentina",
+    "cidade": "Belém",
+    "tipo": "temporada",
+    "aluguel": 3666,
+    "configuracao": {
+        "quartos": 3,
+        "banheiros": 4,
+        "vagas": 1
+    },
+    "lazer": [
+        "churrasqueira",
+        "academia",
+        "piscina",
+        "jardim"
+    ]
+}
+{
+    "endereco": "Rua Vênus 609",
+    "bairro": "Argentina",
+    "cidade": "Rio de Janeiro",
+    "tipo": "comercial",
+    "aluguel": 1535
+}
+{
+    "endereco": "Rua Terra 134",
+    "bairro": "EUA",
+    "cidade": "Rio de Janeiro",
+    "tipo": "temporada",
+    "aluguel": 2539,
+    "configuracao": {
+        "quartos": 2,
+        "banheiros": 2,
+        "vagas": 2
+    },
+    "lazer": [
+        "churrasqueira"
+    ]
+}
+{
+    "endereco": "Rua Saturno 753",
+    "bairro": "Japão",
+    "cidade": "Belém",
+    "tipo": "comercial",
+    "aluguel": 1764
+}
