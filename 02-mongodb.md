@@ -7,8 +7,7 @@ https://www.mongodb.com/
 ## Conceitos
 
 - É um banco de dados orientado a documentos
-- Projetado para proporcional escalabilidade horizontal (scale out), isto é, ao invés de investir recursos aumentando
-a capacidade de um servidor novos computadores são adicionados ao cluster
+- Projetado para proporcional escalabilidade horizontal (scale out), isto é, ao invés de investir recursos aumentando a capacidade de um servidor, novos computadores (nós) são adicionados ao cluster
 - Escalabilidade transparente para a aplicação / desenvolvedor à o próprio MongoDB cuida disso
 - Apresenta alta performance
 - Recursos de indexação, replicação, uso de javascript nativo no lado servidor, consultas com expressões regulares, etc...
@@ -19,95 +18,79 @@ graph TD;
     banco_dados-->collection;
     collection-->document;
 ```
+## Instalação local
+- Instruções para [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials) localmente
+- 
+## Inslatando no Linux (Alpine)
 
-## Instalação
-
-- [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials)
-
-## Utilizando Docker
-
-[Docker Playground](https://labs.play-with-docker.com/)
-
-## Preparando o Ambiente
-
-- Criar uma imagem baseada no centOS
-
-`docker pull centos`
-
-- Iniciar um `container`
-
-`docker run -it -p 27017:27017 --name mongodb centos`
-
-- Atualizar o repositório do `yum`
-
+- [Docker Playground](https://labs.play-with-docker.com/)
+- Executar a instalação dos repositórios e **MongoDB**
+```bash
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/main' >> /etc/apk/repositories
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/community' >> /etc/apk/repositories
+apk update
+apk add mongodb mongodb-tools
 ```
-cd /etc/yum.repos.d/
-echo -e '[mongodb-org-7.0]\nname=MongoDB Repository\nbaseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/7.0/x86_64/\ngpgcheck=1\nenabled=1\ngpgkey=https://www.mongodb.org/static/pgp/server-7.0.asc' > mongodb-org-7.0.repo
-sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
-dnf update -y
-```
-
-## Instalando Mongodb no Container
-
+- O servidor **MongoDB** é o *mongod* e o cliente é o *mongo*
+- Também pode utilizada uma interface gráfica como cliente chamada [Compass](https://www.mongodb.com/products/tools/compass)
 ```mermaid
 graph TD;
     mongod-->mongosh;
     mongod-->compass;
 ```
-
-`yum install -y mongodb-org`
-
 ## Iniciando o servidor
 
 - Criar um diretório para conter o banco de dados, por exemplo:
-    ```
-    mkdir ~/mongodb
-    cd ~/mongodb
-    ```
+```bash
+mkdir ~/mongodb
+cd ~/mongodb
+```
 - Iniciar o servidor
-
-    `mongod --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
-
+```bash
+mongod --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all
+```
 - Verificar estatísticas
-
-    `mongostat`
-
+```bash
+mongostat
+```
 - Verificar leituras e escritas em *collections*
-
-    `mongotop`
-
+```bash
+mongotop
+```
 - Acessar o cliente
-
-    `mongosh`
-
+```bash
+mongo
+```
 - Cliente aceita código em *javascript*
-    ```javascript
-    function mensagem() {
-        return "Alo Mongodb!!!"
-    }
+```javascript
+function mensagem() {
+    return "Alo Mongodb!!!"
+}
 
-    mensagem()
-    ``` 
-## Comandos Básicos
+mensagem()
+``` 
+## Comandos Básicos no Mongo (cliente)
 - `help`: exibe descrição dos comandos
 - `cls`: limpa a tela
 - `show databases`: lista os bancos de dados
+- `exit`: sair do mongo
+- Para finaizar o servidor a partir do cliente (`mongo`)
+```bash
+use admin
+db.shutdownServer()
+```
 - Criar / utilizar um banco de dados
-
-    ```javascript
-    use imobiliaria
-    show collections
-    ```
+```javascript
+use imobiliaria
+show collections
+```
 - Criar uma **collection** e um **documento**
-
-    ```javascript
-    db.tipo_imovel.insertOne({nome: "Residencial"})
-    db.tipo_imovel.find()
-    db.tipo_imovel.findOne()
-    ```
+```javascript
+db.tipo_imovel.insertOne({nome: "Residencial"})
+db.tipo_imovel.find()
+db.tipo_imovel.findOne()
+```
 ## _id
-
 - Atributo `_id` deve ser obrigatório para cada documento
 - Deve ser uma sequência de 12 bytes hexadecimais (24 caracteres)
 - Pode-se fornecer um `_id` explicitamente ou ele pode ser gerado automaticamente (caso não seja fornecido explicitamente)
@@ -139,59 +122,58 @@ graph TD;
 
 - Inserir mais de um documento:
 
-    ```javascript
-    db.tipo_imovel.insertMany([{nome: "Comercial"}, {nome: "Temporada"}])
-    db.tipo_imovel.find().pretty()
-    ```
+```javascript
+db.tipo_imovel.insertMany([{nome: "Comercial"}, {nome: "Temporada"}])
+db.tipo_imovel.find().pretty()
+```
 - Atualizando um documento:
 
-    ```javascript
-    db.tipo_imovel.updateOne({_id: ObjectId('64f888e0825db8d91dcfcb7f')}, {$set: {nome: "Air B&B"}})
-    ```
+```javascript
+db.tipo_imovel.updateOne({_id: ObjectId('64f888e0825db8d91dcfcb7f')}, {$set: {nome: "Air B&B"}})
+```
 - `$set` cria / atualiza um campo em um documento `$unset` remove um campo
 - `$inc` incrementa o valor de um campo numérico (pode ser negativo também, decrementando)
-    ```javascript
-    db.imovel.insertOne({endereco: "Rua Leste, 152"})
-    db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$set:{quartos:1}})
-    db.imovel.updateOne({ endereco: "Rua Leste, 152" }, { $inc: {"quartos":1}})
-    db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$unset:{quartos:-1}})
-    ```
+```javascript
+db.imovel.insertOne({endereco: "Rua Leste, 152"})
+db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$set:{quartos:1}})
+db.imovel.updateOne({ endereco: "Rua Leste, 152" }, { $inc: {"quartos":1}})
+db.imovel.updateOne({endereco: "Rua Leste, 152"}, {$unset:{quartos:-1}})
+```
 - Um documento pode ser substituído integralmente por outro com o `replaceOne({filtro}, novo_doc)`
-    ```javascript
-    db.imovel.replaceOne({endereco: "Rua Leste, 152"}, {endereco: "Rua Oeste, 155", cidade: "São Paulo"})
-    db.imovel.find().pretty()
-    ```
+```javascript
+db.imovel.replaceOne({endereco: "Rua Leste, 152"}, {endereco: "Rua Oeste, 155", cidade: "São Paulo"})
+db.imovel.find().pretty()
+```
 - A exclusão de um documento se dá com `deleteOne` passando um seletor como parâmetro Para excluir mais de um ao mesmo tempo utilizar o `deleteMany({filtro})`
 - Uma coleção inteira pode ser excluída por meio da função `drop()`
-    ```javascript
-    db.imovel.deleteOne({endereco: "Rua Oeste, 155"})
-    db.imovel.find().pretty()
-    show collections
-    db.imovel.drop()
-    ```
-
+```javascript
+db.imovel.deleteOne({endereco: "Rua Oeste, 155"})
+db.imovel.find().pretty()
+show collections
+db.imovel.drop()
+```
 ## Operações com Arrays
 
 - *Arrays* são suportados nativamente como um tipo de dados
-    ```javascript
-    db.imovel.insertOne({endereco: "Rua Oeste, 155", comodos: ["sala", "quarto 1", "quarto 2"]})
-    db.imovel.find().pretty()
-    ```
+```javascript
+db.imovel.insertOne({endereco: "Rua Oeste, 155", comodos: ["sala", "quarto 1", "quarto 2"]})
+db.imovel.find().pretty()
+```
 - `$push` cria / adiciona elementos a um array
 - `$each` modificador de `$push` que permite incluir mais de um elemento no array
-    ```javascript
-    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: "banheiro social"}})
-    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: {$each: ["cozinha", "banheiro serviço"]}}})
-    db.imovel.find().pretty()
-    ```
+```javascript
+db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: "banheiro social"}})
+db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$push: {comodos: {$each: ["cozinha", "banheiro serviço"]}}})
+db.imovel.find().pretty()
+```
 - `$addToSet` é semelhante ao `$push` mas previne que valores duplicados sejam inseridos no array
 - `$pull` remove um elemento do array baseado em um critério (item dentro do *array*)
 - `$pop` também pode ser utilizado para remover elementos do final (`{"key": 1}`) ou início (`{"key": -1}`) do *array*, onde *key* indica o nome do atributo
-    ```javascript
-    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pull: {comodos: "banheiro social"}})
-    db.imovel.find().pretty()
-    db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pop: {comodos: -1}})
-    ```
+```javascript
+db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pull: {comodos: "banheiro social"}})
+db.imovel.find().pretty()
+db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pop: {comodos: -1}})
+```
 - Documentos podem ser definidos como atributos de outros documentos
     ```javascript
     db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$set: {metragem: {largura: 40, profundidade: 60}}})
