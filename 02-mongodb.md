@@ -42,7 +42,6 @@ graph TD;
 - Criar um diretório para conter o banco de dados, por exemplo:
 ```bash
 mkdir ~/mongodb
-cd ~/mongodb
 ```
 - Iniciar o servidor
 ```bash
@@ -186,6 +185,21 @@ cd ~
 touch imoveis.json
 mongoimport --db imobiliaria --collection imovel --file imoveis.json
 ```
+- Utilizar o parâmetro `uri` para servidores remotos (exemplo: `http://universities.hipolabs.com/search?country=brazil`)
+- É possível exportar coleções inteiras para serem importadas em outros bancos de dados
+```bash
+mongoexport --collection imovel --db imobiliaria --out imobiliaria.json
+
+mongoexport --uri "mongodb://mongodb0.example.com:27017/imobiliaria" --collection imobiliaria --out tipo_imovel.json
+```
+- Para exportar um banco de dados completo, com todas as coleções
+```bash
+mongodump --db imobiliaria
+```
+- Para importar
+```bash
+mongorestore dump/imobiliaria/imobiliaria.bson
+```
 ## Consultas Básicas
 
 - A forma mais simples de efetuar consultas ao MongoDB é por meio do `find()`
@@ -234,6 +248,15 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
 - `db.imovel.find({"lazer.0":"jardim"})`: busca por índice no array, retornando documentos onde o primeiro item de lazer na lista (índice 0) seja "jardim"
 - `db.imovel.find({"lazer":{$size: 2}})`: retorna documentos que possuam dois elementos no array lazer
 
+## Exercícios
+- Realizar as seguintes consultas sobre a coleção de documentos `imovel`
+    - Encontrar todos os imóveis com "churrasqueira" no campo lazer
+    - Encontrar todos os imóveis na cidade de "Porto Alegre"
+    - Encontrar imóveis onde o número de quartos seja maior que 1
+    - Encontrar imóveis com aluguel superior a 1000 e que possuam "jardim"
+    - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
+    - Encontrar imóveis cujo bairro contenha "Por"
+
 ## Indices e Performance
 
 - O plano de execução que uma consulta pode ser visualizado por `explain` acompanhado da consulta
@@ -262,11 +285,11 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
 ## Agregações
 
 - [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/) permitem realizar várias operações sobre uma coleção
-    ```javascript
-    db.imovel.aggregate([
-        {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
-    ])
-    ```
+```javascript
+db.imovel.aggregate([
+    {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
+])
+```
 - Algumas agregações possíveis
     - `$sum` soma 
     - `$avg` média
@@ -276,42 +299,49 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
     - `$last` último item
 - Um estágio de ordenação dos dados pode ser definido por `$sort` que recebe o atributo e 1 (crescente) ou -1 (descendente)
 - Com o `$project` define-se quais atributos serão considerados
-    ```javascript
-    db.imovel.aggregate([
-        {$project:{_id: 0, endereco: 1, valor: 1}},
-        {$sort:{valor: -1, endereco: 1}}
-    ])
-    ```
+```javascript
+db.imovel.aggregate([
+    {$project:{_id: 0, endereco: 1, valor: 1}},
+    {$sort:{valor: -1, endereco: 1}}
+])
+```
 - Novos estágios podem ser adicionados por exemplo para filtrar os documentos com o `$match`
-    ```javascript
-    db.imovel.aggregate([
-        {$match:{lazer: "piscina"}},
-        {$project:{_id: 0, endereco: 1, valor: 1}},
-        {$sort:{valor: -1, endereco: 1}}
-    ])
-    ```
+```javascript
+db.imovel.aggregate([
+    {$match:{lazer: "piscina"}},
+    {$project:{_id: 0, endereco: 1, valor: 1}},
+    {$sort:{valor: -1, endereco: 1}}
+])
+```
 - Contadores podem ser utilizados para totalizar resultados com filtros aplicados utilizando o `$count`
-    ```javascript
-    db.imovel.aggregate([
-        {$match:{lazer: "piscina"}},
-        {$count: "total_piscina"}
-    ])
-    ```
+```javascript
+db.imovel.aggregate([
+    {$match:{lazer: "piscina"}},
+    {$count: "total_piscina"}
+])
+```
 - É possível converter arrays em simples objetos com o `$unwind`
-    ```javascript
-    db.imovel.aggregate([
-        {$unwind: "$lazer"},
-        {$group:{_id: "$lazer", total:{$sum: "$valor"}}}
-    ])
-    ```
+```javascript
+db.imovel.aggregate([
+    {$unwind: "$lazer"},
+    {$group:{_id: "$lazer", total:{$sum: "$valor"}}}
+])
+```
 - Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
-    ```
-    $lookup:{   from:"Nome coleção destino",
-                localField: "Nome do campo local (origem)",
-                foreignField: "Nome do campo join (destino)",
-                as: "Nome do atributo na coleção origem onde os resultados serão adicionados"
-    }
-    ```
+```javascript
+$lookup:{   from:"Nome coleção destino",
+            localField: "Nome do campo local (origem)",
+            foreignField: "Nome do campo join (destino)",
+            as: "Nome do atributo na coleção origem onde os resultados serão adicionados"
+}
+```
+## Exercícios
+- Realizar as seguintes consultas com o `aggregate`
+    - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
+    - Contar quantos imóveis têm mais de 2 banheiros
+    - Encontrar todos os imóveis com "piscina" ou "academia" no campo lazer e que possuam mais de 2 vagas de garagem
+    - Agrupar os imóveis por tipo e calcular o aluguel médio de cada tipo
+    - Contar o número de imóveis em cada bairro e ordenar em ordem decrescente de quantidade
 ## Consultas Where
 
 - Neste tipo de consulta é possível incluir código javascript para processar cada um dos documentos de uma coleção É um recurso muito poderoso que permite implementar consultas com maior complexidade
@@ -334,60 +364,25 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
 <img src="img/mongo-ex-1.png" width="300px" height="200px">
 
 - Criar uma collection para armazenar dados de reality shows contendo o nome do reality show, a emissora que o transmite e a quantidade de pontos de audiência que o programa tem
-
 - Incluir dois documentos na collection
-
 - Exibir os documentos inseridos
 
 <img src="img/mongo-ex-2.png" width="600px" height="300px">
 
 - Incluir um novo atributo em Reality Shows (embedded document) para armazenar os participantes
-
 - Criar 3 participantes para cada Reality Show com os valores que você imaginar com o total de votos igual a 0 e eliminado igual a false
 
 <img src="img/mongo-ex-3.png" width="800px" height="400px">
 
 - Incluir um novo atributo em Participante para armazenar os prêmios ganhados pelos participantes durante o reality show
-
 - Incluir dois prêmios para cada participante criado anteriormente com uma descrição e valor aleatórios
-
 - Incluir mais um prêmio para um dos participantes de algum reality show
-
 - Incrementar o total de votos (aleatoriamente) para os quatro participantes dos dois reality shows
-
 - Exibir o nome e o total de pontos de audiência das emissoras
-
 - Exibir o total de pontos de audiência de uma emissora específica, incluindo apenas seu nome e os pontos
-
 - Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
-
 - Exibir o total de votos distribuídos por reality show
-
 - Exibir o total de prêmios distribuídos por reality show
-
-## Exportando / Importando Coleções
-- É possível exportar coleções inteiras para serem importadas em outros bancos de dados
-
-    `mongoexport --collection=tipo_imovel --db=imobiliaria --out=tipo_imovel.json`
-
-    ou (para servidores remotos)
-
-    `mongoexport --uri="mongodb://mongodb0.example.com:27017/imobiliaria" --collection=imobiliaria --out=tipo_imovel.json`
-
-- Para importar
-
-    `mongoimport --db=imobiliaria --collection=imobiliaria --file=tipo_imovel.json`
-
-- Utilizar o parâmetro `uri` para servidores remotos (exemplo: `http://universities.hipolabs.com/search?country=brazil`)
-
-## Exportando / Importando Banco de Dados
-- Para exportar um banco de dados completo, com todas as coleções
-
-    `mongodump --db=imobiliaria`
-
-- Para importar
-
-    `mongorestore dump/imobiliaria/imobiliaria.bson`
 
 ## Validação de Schema
 
