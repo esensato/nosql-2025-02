@@ -185,12 +185,9 @@ cd ~
 touch imoveis.json
 mongoimport --db imobiliaria --collection imovel --file imoveis.json
 ```
-- Utilizar o parâmetro `uri` para servidores remotos (exemplo: `http://universities.hipolabs.com/search?country=brazil`)
 - É possível exportar coleções inteiras para serem importadas em outros bancos de dados
 ```bash
 mongoexport --collection imovel --db imobiliaria --out imobiliaria.json
-
-mongoexport --uri "mongodb://mongodb0.example.com:27017/imobiliaria" --collection imobiliaria --out tipo_imovel.json
 ```
 - Para exportar um banco de dados completo, com todas as coleções
 ```bash
@@ -250,45 +247,65 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
 
 ## Exercícios
 - Realizar as seguintes consultas sobre a coleção de documentos `imovel`
-    - Encontrar todos os imóveis com "churrasqueira" no campo lazer
-    - Encontrar todos os imóveis na cidade de "Porto Alegre"
-    - Encontrar imóveis onde o número de quartos seja maior que 1
-    - Encontrar imóveis com aluguel superior a 1000 e que possuam "jardim"
+    - Encontrar todos os imóveis com "churrasqueira" no campo "lazer"
+    - Listar todos os "endereços" de imóveis na "cidade" de "Porto Alegre"
+    - Encontrar imóveis onde o número de quartos seja maior que 2 ordenado por "cidade"
+    - Encontrar imóveis com "aluguel" superior a 1000 e que possuam "jardim"
+    - Encontrar imóveis que possuam "churrasqueira" e que tenham aluguel menor que 1500    
+    - Encontrar imóveis cujo "bairro" contenha "Por" no início do nome
+    - Exibir a lista de imóveis que possuam, no mínimo, 2 itens de lazer
+    - Encontrar todos os imóveis com "piscina" e "academia" no campo lazer com aluguel menor do que 1200
     - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
-    - Encontrar imóveis cujo bairro contenha "Por"
-
 ## Indices e Performance
-
 - O plano de execução que uma consulta pode ser visualizado por `explain` acompanhado da consulta
-
-    `db.imovel.explain().find({"valor": {$eq: 90000}})`
-
+```javascript
+db.imovel.find({"aluguel": {$gte: 4500}})
+db.imovel.explain().find({"aluguel": {$gte: 4500}})
+```
+- Estágios (*stages*)
+    - `COLLSCAN`: varredura completa da coleção (collection scan)
+    - `IXSCAN`: varredura de índice (index scan)
+    - `FETCH`: busca do documento após índice
+- Na consulta acima está sendo realizada uma busca por `COLLSCAN`, isto é, a consulta está varrendo a coleção inteira e pode ser lento em coleções grandes
 - Para visualizar as estatísticas da execução:
-
-    `db.imovel.explain("executionStats").find({"valor": {$eq: 90000}})`
-
+```javascript
+db.imovel.explain("executionStats").find({"aluguel": {$gte: 4500}})
+```
+- Observar que `totalDocsExamined` é bem maior que `nReturned` indicando que o filtro é neficiente
 - Criar um índice (1 indica ordem crescente e -1 decrescente)
-
-    `db.imovel.createIndex({valor: 1})`
-
+```javascript
+db.imovel.createIndex({"aluguel": 1})
+```
 - Pode-se criar índices compostos por mais de um campo
 - No caso dos índices compostos a ordem dos mesmos é levada em consideração no plano de execução
 - Também é possível criar um índice parcial que será aplicado somente a uma condição específica
-- No caso abaixo, o índice somente será aplicado quando o valor do imóvel for maior do que 200000 na pesquisa
-
-    `db.imovel.createIndex({valor: 1}, {partialFilterExpression:{valor:{$gt: 200000}}})`
+- No caso abaixo, o índice somente será aplicado quando o valor do aluguem for maior do que 4500 na pesquisa
+```javascript
+db.imovel.getIndexes()
+db.imovel.dropIndex("aluguel_1")
+db.imovel.createIndex({"aluguel": 1}, {"partialFilterExpression":{"aluguel":{$gte: 4500}}})
+```
 - Existindo mais de um índice para uma **collection** é possível forçar o uso de um índice específico ao executar um `find` por meio da função `hint` que recebe como parâmetro o nome do índice a ser utilizado
-- Para excluir um índice
-
-    `db.imovel.dropIndex("valor_1")`
-
+```javascript
+db.imovel.find({ aluguel: { $gte: 4500 } }).hint("aluguel_1")
+```
 ## Agregações
 
 - [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/) permitem realizar várias operações sobre uma coleção
+- Por exemplo, retornar o total de valores de aluguel por tipo de imóvel
 ```javascript
 db.imovel.aggregate([
-    {$group:{_id: "$tipo", total:{$sum: "$valor"}}}
+    {$group:{_id: "$tipo", total:{$sum: "$aluguel"}}}
 ])
+```
+- Outro exemplo: obter os tipos de imóvel por cidade
+```javascript
+db.imovel.aggregate([{
+    $group: {
+      _id: "$cidade", 
+      tiposUnicos: { $addToSet: "$tipo" }
+    }
+  }])
 ```
 - Algumas agregações possíveis
     - `$sum` soma 
@@ -301,16 +318,16 @@ db.imovel.aggregate([
 - Com o `$project` define-se quais atributos serão considerados
 ```javascript
 db.imovel.aggregate([
-    {$project:{_id: 0, endereco: 1, valor: 1}},
-    {$sort:{valor: -1, endereco: 1}}
+    {$project:{_id: 0, endereco: 1, aluguel: 1}},
+    {$sort:{aluguel: -1, endereco: 1}}
 ])
 ```
 - Novos estágios podem ser adicionados por exemplo para filtrar os documentos com o `$match`
 ```javascript
 db.imovel.aggregate([
     {$match:{lazer: "piscina"}},
-    {$project:{_id: 0, endereco: 1, valor: 1}},
-    {$sort:{valor: -1, endereco: 1}}
+    {$project:{_id: 0, endereco: 1, aluguel: 1}},
+    {$sort:{aluguel: -1, endereco: 1}}
 ])
 ```
 - Contadores podem ser utilizados para totalizar resultados com filtros aplicados utilizando o `$count`
@@ -324,7 +341,7 @@ db.imovel.aggregate([
 ```javascript
 db.imovel.aggregate([
     {$unwind: "$lazer"},
-    {$group:{_id: "$lazer", total:{$sum: "$valor"}}}
+    {$group:{_id: "$lazer", total:{$sum: "$aluguel"}}}
 ])
 ```
 - Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
@@ -335,15 +352,52 @@ $lookup:{   from:"Nome coleção destino",
             as: "Nome do atributo na coleção origem onde os resultados serão adicionados"
 }
 ```
+- Criar uma coleção para conter alguns valores de IPTU para os imóveis utilizando uma função *javascript*
+```javascript
+let imoveis = db.imovel.find({}, { _id: 1 }).limit(10).toArray();
+
+let iptuDocs = imoveis.map(imovel => ({
+    id_imovel: imovel._id,
+    ano: 2025,
+    valor: Math.floor(Math.random() * 5000) + 500
+}));
+
+db.iptu.insertMany(iptuDocs);
+```
+- Utilizar o `$lookup` para realizar o *join* entre as coleções
+```javascript
+db.imovel.aggregate([
+    {
+        $lookup: {
+            from: "iptu",
+            localField: "_id",
+            foreignField: "id_imovel",
+            as: "iptu_info"
+        }
+    },
+    {
+        $match: {
+            iptu_info: { $ne: [] }
+        }
+    },
+    {
+        $project: {
+            endereco: 1,
+            bairro: 1,
+            cidade: 1,
+            tipo: 1,
+            aluguel: 1,
+            "iptu_info.valor": 1
+        }
+    }
+]).pretty();
+```
 ## Exercícios
 - Realizar as seguintes consultas com o `aggregate`
-    - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
     - Contar quantos imóveis têm mais de 2 banheiros
-    - Encontrar todos os imóveis com "piscina" ou "academia" no campo lazer e que possuam mais de 2 vagas de garagem
     - Agrupar os imóveis por tipo e calcular o aluguel médio de cada tipo
     - Contar o número de imóveis em cada bairro e ordenar em ordem decrescente de quantidade
 ## Consultas Where
-
 - Neste tipo de consulta é possível incluir código javascript para processar cada um dos documentos de uma coleção É um recurso muito poderoso que permite implementar consultas com maior complexidade
     ```javascript
     db.imovel.find({$where: function () {
