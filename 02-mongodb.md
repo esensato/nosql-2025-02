@@ -185,6 +185,11 @@ cd ~
 touch imoveis.json
 mongoimport --db imobiliaria --collection imovel --file imoveis.json
 ```
+- Outro exemplo para importar dados de universidades brasileiras
+```bash
+wget http://universities.hipolabs.com/search?country=brazil -O universidades.json
+mongoimport --db universidades --collection brasil --file universidades.json --jsonArray
+```
 - É possível exportar coleções inteiras para serem importadas em outros bancos de dados
 ```bash
 mongoexport --collection imovel --db imobiliaria --out imobiliaria.json
@@ -253,7 +258,6 @@ db.imovel.find({endereco: {$regex: "^Rua Urano"}})
     - Encontrar imóveis com "aluguel" superior a 1000 e que possuam "jardim"
     - Encontrar imóveis que possuam "churrasqueira" e que tenham aluguel menor que 1500    
     - Encontrar imóveis cujo "bairro" contenha "Por" no início do nome
-    - Exibir a lista de imóveis que possuam, no mínimo, 2 itens de lazer
     - Encontrar todos os imóveis com "piscina" e "academia" no campo lazer com aluguel menor do que 1200
     - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
 ## Indices e Performance

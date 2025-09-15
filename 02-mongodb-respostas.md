@@ -1,0 +1,30 @@
+- Encontrar todos os imóveis com "churrasqueira" no campo "lazer"
+
+`db.imovel.find({lazer: "churrasqueira"})`
+
+- Listar todos os "endereços" de imóveis na "cidade" de "Porto Alegre"
+
+`db.imovel.find({cidade: "Porto Alegre"}, {endereco: 1})`
+
+- Encontrar imóveis onde o número de quartos seja maior que 2 ordenado por "cidade"
+`db.imovel.find({"configuracao.quartos": {$gt: 2}}, {cidade: 1, "configuracao.quartos": 1}).sort({cidade: 1})`
+
+- Encontrar imóveis com "aluguel" superior a 1000 e que possuam "jardim"
+
+`db.imovel.find({"aluguel": {$gt: 1000}, lazer: "jardim"}).pretty()`
+
+- Encontrar imóveis que possuam "churrasqueira" e que tenham aluguel menor que 1500
+
+`db.imovel.find({"aluguel": {$lt: 1500}, lazer: "churrasqueira"}).pretty()`
+ 
+- Encontrar imóveis cujo "bairro" contenha "Por" no início do nome
+
+`db.imovel.find({"bairro": {$regex: "^Por"}}).pretty()`
+
+- Encontrar todos os imóveis com "piscina" e "academia" no campo lazer com aluguel menor do que 1200
+
+`db.imovel.find({"aluguel": {$lt: 1200}, lazer: {$all: ["piscina", "academia"]}}).pretty()`
+
+- Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
+
+`db.imovel.find({$or:[{"aluguel": {$lt: 1500}}, {lazer: "churrasqueira"}]}).pretty()`
