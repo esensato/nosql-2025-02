@@ -348,6 +348,51 @@ db.imovel.aggregate([
     {$group:{_id: "$lazer", total:{$sum: "$aluguel"}}}
 ])
 ```
+- Para cálculos um pouco mais complexos pode-se criar variáveis (`$let`) para armazear valores inermediários como resultado de cálculos
+- Por exemplo, obter o total de cômodos por unidade
+```javascript
+db.imovel.aggregate([
+  {
+    $project: {
+      endereco: 1,
+      cidade: 1,
+      totalComodos: {
+        $let: {
+          vars: {
+            q: "$configuracao.quartos",
+            b: "$configuracao.banheiros",
+            v: "$configuracao.vagas"
+          },
+          in: { $add: ["$$q", "$$b", "$$v"] }
+        }
+      }
+    }
+  }
+])
+```
+- Também é possível criar coleções que resumem informações, por exemplo, a média dos valores de aluguel por cidade e armazená-las em uma outra coleção (`$out`)
+```javascript
+db.imovel.aggregate([
+  {
+    $group: {
+      _id: "$cidade",
+      mediaAluguel: { $avg: "$aluguel" }
+    }
+  },
+  {
+    $out: "media_aluguel_por_cidade"
+  }
+])
+```
+- Inserir uma nova cidade e executar novamente a agregação anterior para atualizar a `media_aluguel_por_cidade`
+```javascript
+db.imovel.insertOne({
+    "endereco": "Rua Urano 830",
+    "bairro": "Brasil",
+    "cidade": "Maceió",
+    "tipo": "temporada",
+    "aluguel": 1000})
+```
 - Outra opção interessante é o `$lookup` que permite realizar *joins* entre **collections**
 ```javascript
 $lookup:{   from:"Nome coleção destino",
