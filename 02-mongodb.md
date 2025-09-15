@@ -181,8 +181,7 @@ db.imovel.updateOne({endereco: "Rua Oeste, 155"}, {$pop: {comodos: -1}})
 - Para carregar documentos em lote utilizar o `mongoimport`
 - Utilizar o arquivo [imoveis.json](https://github.com/esensato/nosql-2025-02/blob/main/imoveis.json) como base de dados
 ```bash
-cd ~
-touch imoveis.json
+wget https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/imoveis.json
 mongoimport --db imobiliaria --collection imovel --file imoveis.json
 ```
 - Outro exemplo para importar dados de universidades brasileiras
