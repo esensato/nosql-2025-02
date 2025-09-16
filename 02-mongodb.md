@@ -294,7 +294,7 @@ db.imovel.find({ aluguel: { $gte: 4500 } }).hint("aluguel_1")
 ```
 ## Agregações
 
-- [Agregações](https://www.mongodb.com/docs/manual/reference/operator/aggregation/) permitem realizar várias operações sobre uma coleção
+- [Agregações](https://www.mongodb.com/pt-br/docs/manual/aggregation/) permitem realizar várias operações sobre uma coleção
 - Por exemplo, retornar o total de valores de aluguel por tipo de imóvel
 ```javascript
 db.imovel.aggregate([
@@ -456,11 +456,10 @@ db.imovel.aggregate([
     ```
 ## Cursores
 - Permitem manipular o resultado de uma consulta de forma flexível
-    ```javascript
-    var imoveis = db.imovel.find()
-        imoveis.forEach(function(imovel) { print(imovel.endereco);
-    })
-    ```
+```javascript
+var imoveis = db.imovel.find()
+imoveis.forEach(function(imovel) { print(imovel.endereco) })
+```
 ## Exercício
 
 <img src="img/mongo-ex-1.png" width="300px" height="200px">
