@@ -510,6 +510,10 @@ Additional information: {
     }
 }
 ```
+## Mapeando Relacionamentos
+- Bancos de dados **noSQL** não possuem nativamente o recurso de relacionamento por chaves estrangeiras como os relacionais (SQL)
+- Pode-se utilizar o recurso de documentos embutidos (*embeded*)
+- Também é possível criar referências utilizando `ObjectId()`
 ## Mongodb na Cloud
 - [Mongodb Atlas](https://www.mongodb.com/pt-br/atlas/database)
 - Efetuar o cadastro com email (*gmail*)
