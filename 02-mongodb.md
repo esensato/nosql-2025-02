@@ -667,7 +667,6 @@ start();
     - Gerar uma consulta que exiba o nome do *reality show* e os seus participantes
     - Elaborar uma consulta que exiba, por *reality show* qual o participante mais novo e o mais velho (de acrodo com a idade)
     - Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
-    - Exibir o total de votos distribuídos por reality show
     - Exibir o total de prêmios distribuídos por reality show
     - Exibir o nome e o total de pontos de audiência das emissoras
     - Criar uma página para votação nos candidatos de um reality show
