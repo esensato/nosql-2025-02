@@ -655,7 +655,7 @@ start();
 ## Exercício
 - Imagine uma aplicação para ajudar na realização de um *reality show* implementada pelo modelo entidade relacionamento abaixo:
 
-<img src="img/mongo-ex-1.png" width="300px" height="200px">
+<img src="img/mongo-ex-1.png" width="500px" height="400px">
 
 - Considerando que esta aplicação deve utilizar um banco de dados **noSQL** implementado em **MongoDB** pede-se:
     - Elaborar um *json schema* para o diagrama acima
