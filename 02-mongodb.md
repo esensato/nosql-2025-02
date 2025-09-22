@@ -462,7 +462,6 @@ imoveis.forEach(function(imovel) { print(imovel.endereco) })
 ```
 ## Validação de Schema
 - Apesar da característica flexível do *schema* baseado em documentos é possível [Definir Regras](https://www.mongodb.com/docs/manual/core/schema-validation/specify-json-schema/#std-label-schema-validation-json) para a validação
-
 ```javascript
 db.createCollection("proprietario", {
 validator: {
@@ -514,6 +513,7 @@ Additional information: {
 - Bancos de dados **noSQL** não possuem nativamente o recurso de relacionamento por chaves estrangeiras como os relacionais (SQL)
 - Pode-se utilizar o recurso de documentos embutidos (*embeded*)
 - Também é possível criar referências utilizando `ObjectId()`
+
 ## Mongodb na Cloud
 - [Mongodb Atlas](https://www.mongodb.com/pt-br/atlas/database)
 - Efetuar o cadastro com email (*gmail*)
@@ -659,7 +659,7 @@ start();
 ## Exercício
 - Imagine uma aplicação para ajudar na realização de um *reality show* implementada pelo modelo entidade relacionamento abaixo:
 
-<img src="img/mongo-ex-1.png" width="500px" height="400px">
+<img src="img/mongo-ex-1.png" width="700px" height="600px">
 
 - Considerando que esta aplicação deve utilizar um banco de dados **noSQL** implementado em **MongoDB** pede-se:
     - Elaborar um *json schema* para o diagrama acima
