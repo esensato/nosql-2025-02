@@ -460,90 +460,127 @@ db.imovel.aggregate([
 var imoveis = db.imovel.find()
 imoveis.forEach(function(imovel) { print(imovel.endereco) })
 ```
-## Exercício
-
-<img src="img/mongo-ex-1.png" width="300px" height="200px">
-
-- Criar uma collection para armazenar dados de reality shows contendo o nome do reality show, a emissora que o transmite e a quantidade de pontos de audiência que o programa tem
-- Incluir dois documentos na collection
-- Exibir os documentos inseridos
-
-<img src="img/mongo-ex-2.png" width="600px" height="300px">
-
-- Incluir um novo atributo em Reality Shows (embedded document) para armazenar os participantes
-- Criar 3 participantes para cada Reality Show com os valores que você imaginar com o total de votos igual a 0 e eliminado igual a false
-
-<img src="img/mongo-ex-3.png" width="800px" height="400px">
-
-- Incluir um novo atributo em Participante para armazenar os prêmios ganhados pelos participantes durante o reality show
-- Incluir dois prêmios para cada participante criado anteriormente com uma descrição e valor aleatórios
-- Incluir mais um prêmio para um dos participantes de algum reality show
-- Incrementar o total de votos (aleatoriamente) para os quatro participantes dos dois reality shows
-- Exibir o nome e o total de pontos de audiência das emissoras
-- Exibir o total de pontos de audiência de uma emissora específica, incluindo apenas seu nome e os pontos
-- Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
-- Exibir o total de votos distribuídos por reality show
-- Exibir o total de prêmios distribuídos por reality show
-
 ## Validação de Schema
-
 - Apesar da característica flexível do *schema* baseado em documentos é possível [Definir Regras](https://www.mongodb.com/docs/manual/core/schema-validation/specify-json-schema/#std-label-schema-validation-json) para a validação
 
-    ```javascript
-    db.createCollection("proprietario", {
-    validator: {
-        $jsonSchema: {
-            bsonType: "object",
-            title: "Validação de Proprietário",
-            required: [ "nome", "cpf", "total_imoveis"],
-            properties: {
-                nome: {
-                bsonType: "string",
-                description: "'nome' deve ser uma string e obrigatório"
-                },
-                cpf: {
-                bsonType: "int",
-                description: "'cpf' deve ser um inteiro e obrigatório"
-                },
-                total_imoveis: {
-                bsonType: "int",
-                minimum: 1,
-                description: "'total_imoveis' deve ser maior do que zero"
-                }
+```javascript
+db.createCollection("proprietario", {
+validator: {
+    $jsonSchema: {
+        bsonType: "object",
+        title: "Validação de Proprietário",
+        required: [ "nome", "cpf", "total_imoveis"],
+        properties: {
+            nome: {
+            bsonType: "string",
+            description: "'nome' deve ser uma string e obrigatório"
+            },
+            cpf: {
+            bsonType: "int",
+            description: "'cpf' deve ser um inteiro e obrigatório"
+            },
+            total_imoveis: {
+            bsonType: "int",
+            minimum: 1,
+            description: "'total_imoveis' deve ser maior do que zero"
             }
         }
     }
-    } )
-    ```
+}
+} )
+```
 - Inserir um documento inválido
-
-    `db.proprietario.insertOne({nome: "Joao"})`
-
+```javascript
+db.proprietario.insertOne({nome: "Joao"})`
+```
 - Resultado
-    ```javascript
-    Additional information: {
-      failingDocumentId: ObjectId("651d49ce119516947ca0f0c3"),
-      details: {
-        operatorName: '$jsonSchema',
-        title: 'Validação de Proprietário',
-        schemaRulesNotSatisfied: [
-          {
-            operatorName: 'required',
-            specifiedAs: { required: [ 'nome', 'cpf', 'total_imoveis' ] },
-            missingProperties: [ 'cpf', 'total_imoveis' ]
-          }
-        ]
-      }
+```javascript
+Additional information: {
+    failingDocumentId: ObjectId("651d49ce119516947ca0f0c3"),
+    details: {
+    operatorName: '$jsonSchema',
+    title: 'Validação de Proprietário',
+    schemaRulesNotSatisfied: [
+        {
+        operatorName: 'required',
+        specifiedAs: { required: [ 'nome', 'cpf', 'total_imoveis' ] },
+        missingProperties: [ 'cpf', 'total_imoveis' ]
+        }
+    ]
     }
-    ```
+}
+```
 ## Mongodb na Cloud
-
 - [Mongodb Atlas](https://www.mongodb.com/pt-br/atlas/database)
+- Efetuar o cadastro com email (*gmail*)
+- Criar um projeto e instanciar o cluster
+- Habilitar o acesso ao cluster de qualquer local (menu **Security** -> **Network Access** -> **Edit** -> **Allow Access From Anywhere**)
+#### Conexão
+- A coneção pode ser feita via **mongo** (como feito até então) ou utilizando o [Mongodb Compass](https://www.mongodb.com/try/download/compass)
+- Abrir o [Docker Playground](https://labs.play-with-docker.com/)
+- Executar a instalação dos repositórios e **MongoDB**
+```bash
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/main' >> /etc/apk/repositories
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/community' >> /etc/apk/repositories
+apk update
+apk add mongodb mongodb-tools
+```
+- No **Atlas** selecionar no menu lateral **DATABASE** -> **Cluster** e escolher **Connect**
+- Clicar sobre o item **Shell** e observar a string de conexão exibida que deve ter o seguinte formato:
+```bash
+mongo "mongodb+srv://cluster0.hjjrtbi.mongodb.net/" --username <db_username>
+```
+- Utilizar o `mongoimport` para realizar a importação dos dados dos imóveis
+```bash
+wget https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/imoveis.json
+mongoimport --uri "mongodb+srv://<username>:<password>@<cluster-url>" --db imobiliaria --collection imovel --file imoveis.json
+```
+- Após a importação clicar sobre o botão **Browse Collections** e verificar se os dados foram importados para a coleção **imovel**
+- Criar uma consulta que exporte o resultado para uma nova coleção chamada **media_aluguel_por_cidade**
+```javascript
+db.imovel.aggregate([
+  {
+    $group: {
+      _id: "$cidade",
+      mediaAluguel: { $avg: "$aluguel" }
+    }
+  },
+  {
+    $out: "media_aluguel_por_cidade"
+  }
+])
+```
+- Criar um **Dashboard** para exibir um gráfico com a média de aluguel por cidade
+- Exibir o **Dashboard** em uma página de uma aplicação *nodejs*
+- Iniciar uma nova instância para instalar a aplicação `nodejs`
+```shell
+apk add nodejs npm
+mkdir app
+cd app
+mkdir public
+touch public/index.html
+touch server.js
+npm init -y
+npm install --save express path
+```
+- Ediar o arquivo `server.js` e inserir o conteúdo
+```javascript
+const express = require('express');
+const path = require('path');
 
-## Cliente Interface Amigável
+const app = express();
 
-- [Mongodb Compass](https://www.mongodb.com/try/download/compass)
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
 
+app.listen(3000, async () => {
+    console.log('Servidor rodando...');
+});
+```
+- Editar o arquivo `public/index.html` e incluir o `iframe` conforme indicado pela opção *embed* do **Dashboard**
+```html
+<iframe style="background: #F1F5F4;border: none;border-radius: 2px;box-shadow: 0 2px 10px 0 rgba(70, 76, 79, .2);width: 100vw;height: 100vh;"  src="https://charts.mongodb.com/charts-imobiliaria-ompguxh/embed/dashboards?id=68d1910a-0591-48b0-87d2-9774202032f7&theme=light&autoRefresh=true&maxDataAge=14400&showTitleAndDesc=false&scalingWidth=fixed&scalingHeight=fixed"></iframe>
+```
 ## Use Cases
 
 ## Integração Aplicações (Nodejs)
@@ -556,51 +593,82 @@ imoveis.forEach(function(imovel) { print(imovel.endereco) })
 - Instalar o cliente **MongoDB** para **Nodejs** `npm install mongodb --save`
 - Criar o arquivo abaixo com o nome `testeMongodb.js`
 
-  ```javascript
-    const MongoClient = require('mongodb').MongoClient;
+```javascript
+const MongoClient = require('mongodb').MongoClient;
 
-    async function testeConexao() {
+async function testeConexao() {
 
-        // obter a string de conexão do Atlas ou utilizar a conexão local
-        const url = 'mongodb+srv://teste:teste@cluster0.wnbdk2i.mongodb.net/?retryWrites=true&w=majority';
-        // Instancia um cliente para o mongo (como um shell mongo)
-        let client = new MongoClient(url);
-        // Abre a conexão
-        await client.connect();
-        // cria uma coleção
-        const collection = client.db('imobiliaria').collection('imovel');
-        // insere um documento na coleção
-        const doc = { tipo: "Casa", endereco: "Rua Leste, 123", configuracao: { quartos: 1, banheiro: 1 }, lazer: ["jardim"], valor: 100000 };
-        //const ret = await collection.insertOne(doc);
-        console.log(ret);
-        const cursor = await collection.find();
-        // outra alternativa: const cursor = await collection.find().toArray();
-        console.log(await cursor.next());
-        // Fecha a conexão
-        client.close();
+    // obter a string de conexão do Atlas ou utilizar a conexão local
+    const url = 'mongodb+srv://teste:teste@cluster0.wnbdk2i.mongodb.net/?retryWrites=true&w=majority';
+    // Instancia um cliente para o mongo (como um shell mongo)
+    let client = new MongoClient(url);
+    // Abre a conexão
+    await client.connect();
+    // cria uma coleção
+    const collection = client.db('imobiliaria').collection('imovel');
+    // insere um documento na coleção
+    const doc = { tipo: "Casa", endereco: "Rua Leste, 123", configuracao: { quartos: 1, banheiro: 1 }, lazer: ["jardim"], valor: 100000 };
+    //const ret = await collection.insertOne(doc);
+    console.log(doc);
+    const cursor = await collection.find();
+    // outra alternativa: const cursor = await collection.find().toArray();
+    console.log(await cursor.next());
+    // Fecha a conexão
+    client.close();
 
-    }
+}
 
-    testeConexao();
-  ```
+testeConexao();
+```
 - Executar `node testeMongodb.js`
-
 - Exemplo com **Express**
+```javascript
+const express = require('express');
+const path = require('path');
+const app = express();
+const MongoClient = require('mongodb').MongoClient;
+let client = null;
 
-    ```javascript
-    const start = async () => {
-    
-        await client.connect();
-        db = client.db("viagem");
-        app.listen(8000, () => {
-            console.log('Servidor iniciado porta 8000')
-        });
-    
-    }
-    
-    start();
-    ```
-    
+// Servir arquivos estáticos (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/imoveis', async (req, res) => {
+    const collection = client.db('imobiliaria').collection('imovel');
+    const imoveis = await collection.find().toArray();
+    res.json(imoveis);
+});
+
+const start = async () => {
+
+    const url = 'mongodb+srv://<username>:<senha>@cluster0.hjjrtbi.mongodb.net/?retryWrites=true&w=majority';
+    // Instancia um cliente para o mongo (como um shell mongo)
+   client = new MongoClient(url);
+
+    await client.connect();
+    app.listen(3000, () => {
+        console.log('Servidor iniciado')
+    });
+
+}
+start();
+```
+## Exercício
+- Imagine uma aplicação para ajudar na realização de um *reality show* implementada pelo modelo entidade relacionamento abaixo:
+
+<img src="img/mongo-ex-1.png" width="300px" height="200px">
+
+- Considerando que esta aplicação deve utilizar um banco de dados **noSQL** implementado em **MongoDB** pede-se:
+    - Elaborar um *json schema* para o diagrama acima
+    - Criar 3 *reality shows* com 10 participantes cada e uma lista com 50 prêmios potenciais (dica: utilizar algum prompt de IA para gerar os arquivos no formato *json* e realizar a importação)
+    - Gerar uma consulta que exiba o nome do *reality show* e os seus participantes
+    - Elaborar uma consulta que exiba, por *reality show* qual o participante mais novo e o mais velho (de acrodo com a idade)
+    - Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
+    - Exibir o total de votos distribuídos por reality show
+    - Exibir o total de prêmios distribuídos por reality show
+    - Exibir o nome e o total de pontos de audiência das emissoras
+    - Criar uma página para votação nos candidatos de um reality show
+    - Exibir um gráfico para acompanhar os votos recebidos pelos candidados de um reality show
+
 ## Replica Sets
 
 - Iniciar cada servidor com a opção `replSet`
@@ -690,20 +758,19 @@ imoveis.forEach(function(imovel) { print(imovel.endereco) })
     ```
 - Habilitar o sharding em um banco de dados
 
-    ```javascript
-    sh.enableSharding('clientes')
-    
-    ```
+```javascript
+sh.enableSharding('clientes')
+
+```
     
 - Adicionando sharding em uma Collection
-
-    ```javascript
-    sh.shardCollection("clientes.ficha", { cpf : "hashed" } )
-    sh.status()
-    ```
+```javascript
+sh.shardCollection("clientes.ficha", { cpf : "hashed" } )
+sh.status()
+```
 - Verificando a distribuição no router
 
-    ```javascript
-    db.ficha.getShardDistribution()
-    ```
+```javascript
+db.ficha.getShardDistribution()
+```
     
