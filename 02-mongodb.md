@@ -665,7 +665,7 @@ start();
     - Pensar em como modelar este *schema* relacional dentro do modelo **noSQL** baseado em documento
     - Elaborar um *json schema* para o diagrama acima considerando *reality_show*, *participante* e *premio*
     - Criar 3 *reality shows* com 10 participantes cada e uma lista com 50 prêmios potenciais (dica: utilizar algum prompt de IA para gerar os arquivos no formato *json* e realizar a importação)
-    - Gerar uma consulta que exiba o nome do *reality show* e os seus participantes
+    - Gerar uma consulta que exiba o nome do *reality show*, o nome de seus participantes e os prêmios já recebidos por cada um deles
     - Elaborar uma consulta que exiba, por *reality show* qual o participante mais novo e o mais velho (de acrodo com a idade)
     - Exibir o nome da emissora e o nome do reality onde alguém tenha ganho um prêmio maior ou igual a 50000 (se não retornar documentos teste com outros valores)
     - Exibir o total de prêmios distribuídos por reality show
