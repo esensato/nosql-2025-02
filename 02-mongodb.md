@@ -662,7 +662,8 @@ start();
 <div style="text-align: center"><img src="img/mongo-ex-1.png" width="800px" height="700px"></div>
 
 - Considerando que esta aplicação deve utilizar um banco de dados **noSQL** implementado em **MongoDB** pede-se:
-    - Elaborar um *json schema* para o diagrama acima
+    - Pensar em como modelar este *schema* relacional dentro do modelo **noSQL** baseado em documento
+    - Elaborar um *json schema* para o diagrama acima considerando *reality_show*, *participante* e *premio*
     - Criar 3 *reality shows* com 10 participantes cada e uma lista com 50 prêmios potenciais (dica: utilizar algum prompt de IA para gerar os arquivos no formato *json* e realizar a importação)
     - Gerar uma consulta que exiba o nome do *reality show* e os seus participantes
     - Elaborar uma consulta que exiba, por *reality show* qual o participante mais novo e o mais velho (de acrodo com a idade)
