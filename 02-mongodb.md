@@ -490,7 +490,8 @@ validator: {
 ```
 - Inserir um documento inválido
 ```javascript
-db.proprietario.insertOne({nome: "Joao"})`
+db.proprietario.insertOne({nome: "Joao"})
+db.proprietario.insertOne({nome: "Joao", cpf: NumberInt(123), total_imoveis: NumberInt(1)})
 ```
 - Resultado
 ```javascript

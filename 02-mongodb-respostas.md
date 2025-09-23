@@ -28,3 +28,16 @@
 - Encontrar imóveis que possuam "churrasqueira" no campo lazer ou que tenham aluguel menor que 1500
 
 `db.imovel.find({$or:[{"aluguel": {$lt: 1500}}, {lazer: "churrasqueira"}]}).pretty()`
+
+
+> db.imovel.aggregate([ {$match: {"configuracao.banheiros": {$gt: 2}}},
+... {$count: "total_mais_2_banheiros"}
+... ])
+
+> db.imovel.aggregate([
+... {$group: {_id: "$tipo", media_aluguel:{$avg: "$aluguel"}}}
+... ])
+
+> db.imovel.aggregate([ {$group: {_id: "$bairro", total:{$sum: 1}}},
+... {$sort:{total: -1}}
+... ])
