@@ -21,7 +21,6 @@ graph TD;
 ## Instalação local
 - Instruções para [Instalação do MongoDB](https://docs.mongodb.com/manual/installation/#mongodb-community-edition-installation-tutorials) localmente
 ## Inslatando no Linux (Alpine)
-
 - [Docker Playground](https://labs.play-with-docker.com/)
 - Executar a instalação dos repositórios e **MongoDB**
 ```bash
@@ -662,6 +661,21 @@ start();
 
 <div style="text-align: center"><img src="img/mongo-ex-1.png" width="800px" height="700px"></div>
 
+- Cadastrar-se no [Mongodb Atlas](https://www.mongodb.com/pt-br/cloud/atlas/register)
+- Obter o [Atlas CLI](https://www.mongodb.com/try/download/atlascli)
+    - Descompactar arquivo `zip`
+    - Acessar a pasta descompactada na pasta `bin`
+    - Efetuar login no **Mongo Atlas** com `atlas login`
+    - Você será direcionado automaticamente para a página de login do **Mongo Atlas** (efetuar login)
+    - Observar no prompt de comando que será exibido um *verification code* que deverá ser informado novamente na página de login para autorizar o dispositivo
+    - Criar um novo projeto `atlas projects create reality-show`
+    - Definir o projeto criado como padrão (obter o `id` do projeto criado - *Project '68d6f3eff709eb24d6b07405' created.*) `atlas config set project_id <id>`
+    - Criar um cluster `atlas clusters create cluster01 --provider AWS --region US_EAST_1 --tier M0`
+    - Permitir que qualquer IP tenha acesso ao cluster `atlas accessLists create 0.0.0.0/0`
+    - Criar um usuário `atlas dbusers create readWriteAnyDatabase --projectId <projectId> --username <username> --password <password>`
+    - Opcional: efetuar o download do [mongosh](https://www.mongodb.com/try/download/shell)
+    - Obter a *string* de conexão com o cluster `atlas clusters connectionStrings describe cluster01`
+    - Efetuar a conexão (com a *string* de conexão retornada acima): `mongosh mongodb+srv://<STRING_CONEXAO> -u teste -p teste`
 - Considerando que esta aplicação deve utilizar um banco de dados **noSQL** implementado em **MongoDB** pede-se:
     - Pensar em como modelar este *schema* relacional dentro do modelo **noSQL** baseado em documento
     - Elaborar um *json schema* para o diagrama acima considerando *reality_show*, *participante* e *premio*
@@ -675,107 +689,195 @@ start();
     - Exibir um gráfico para acompanhar os votos recebidos pelos candidados de um reality show
 
 ## Replica Sets
-
-- Iniciar cada servidor com a opção `replSet`
-`mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all`
-- Acessar o servidor master via `mongosh` e adicionar os membros (replicas)
-    ```javascript
-        rs.initiate( {
-        _id : "rs0",
-        members: [
-            { _id: 0, host: "192.168.0.6:27017" },
-            { _id: 1, host: "192.168.0.7:27017" }
-            { _id: 1, host: "192.168.0.8:27017" }
-        ]
-        })
-    ```
-- **Obs:** Trocar os endereços de IP
+- *Replica Sets* implementa alta disponibilidade por meio da replicação de dados
+- [Docker Playground](https://labs.play-with-docker.com/)
+- Criar 4 nós dentro do *Docker Playground* e instalar o **mongodb** em cada um deles
+```bash
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/main' >> /etc/apk/repositories
+echo 'http://dl-cdn.alpinelinux.org/alpine/v3.9/community' >> /etc/apk/repositories
+apk update
+apk add mongodb mongodb-tools
+```
+- Iniciar cada nó com a opção `replSet`
+```bash
+mkdir mongodb
+mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_ip_all
+```
+- Acessar o servidor master via `mongo` e adicionar os membros (replicas) substituindo corretamente os endereços de IP abaixo
+```javascript
+rs.initiate( {
+_id : "rs0",
+members: [
+    { _id: 0, host: "192.168.0.12:27017" },
+    { _id: 1, host: "192.168.0.13:27017" },
+    { _id: 2, host: "192.168.0.14:27017" }
+]
+})
+```
 - Para visualizar a configuração do **Replica Set**
-
-    ```javascript
-    rs.config()
-    ```
+```javascript
+rs.config()
+```
+- Para visualizar o sttaus atual do **Replica Set**
+```javascript
+rs.status()
+```
+- Acessar os 3 servidores via `mongo` e observar que um deles é o primário
+- Criar um banco de dados e uma coleção no servidor **primário**
+```javascript
+use replicacao
+db.replica.insertOne({msg: "Replica OK"})
+```
+- Por padrão não é permitida a leitura de dados a partir dos nós **secundários** e por isso é necessário habilitar esta ação em cada um deles
+```javascript
+rs.slaveOk()
+```
+- Acessar um servidor **secundário** e consultar a coleção criada no **primário**
+```javascript
+use replicacao
+db.replica.find()
+```
 - Parar o sevidor primário
-    ```javascript
-    db.shutdownServer()
-    ```
-    
-## Sharding
+```javascript
+use admin
+db.shutdownServer()
+```
+- Verificar se outro servidor assumiu como primário
+#### Arbiter
+- É um nó servidor que não armazena dados
+- Serve para indicar qual é o nó primário em determinado momento
+- Adicionar um dos nós como *arbiter* (trocar o IP) no **primário**
+```javascript
+rs.addArb("192.168.0.11:27017")
+rs.conf()
+```
+- Para saber qual é o **primário** basta buscar pelo *status* a partir do nó escolhido como **arbiter**
+```javascript
+rs.status()
+```
+- Ou, de forma mais resunida (ver atributo `primary`)
+```javascript
+rs.isMaster()
+```
+- Em uma aplicação a escolha do primário fica transparente
+```javascript
+const { MongoClient } = require("mongodb");
 
+// String de conexão incluindo primário, secundário(s) e arbiter (trocar os IPs)
+const uri = "mongodb://192.168.0.11:27017,192.168.0.12:27017,192.168.0.13:27017,192.168.0.14:27017/?replicaSet=rs0";
+
+// Cria o cliente
+const client = new MongoClient(uri, {
+  useUnifiedTopology: true,
+  readPreference: "primary"  // leitura no primário
+});
+
+async function run() {
+  try {
+    await client.connect();
+    console.log("Conectado ao replica set!");
+
+    const db = client.db("replicacao");
+    const collection = db.collection("replica");
+
+    // Leitura
+    const doc = await collection.findOne({});
+    console.log("Documento encontrado:", doc);
+
+  } finally {
+    await client.close();
+  }
+}
+
+run().catch(console.dir);
+```
+## Sharding
 - É uma técnica de replicação de dados que permite estala horizontal
 - Cada banco de dados é denominado *shard* e funciona de forma independente
 - São necessários três componentes:
     - Config Server
-    - Roteador (`mongos`)
-    - Shards
-
-- Configurando os componentes
     ```javascript
     mongod --configsvr --replSet configserver --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
-
-    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
-
-    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
-
-    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all
-
+    ```
+    - Roteador (`mongos`)
+    ```javascript
     mongos --configdb configserver/[IP_CONFIG_SERVER]:27017 --bind_ip_all --port 27017 --fork --logpath /dev/null
     ```
-
-- Executar no config
-
+    - Shards (instanciar 3)
     ```javascript
+    mongod --shardsvr --replSet shard_1 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    mongod --shardsvr --replSet shard_2 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    mongod --shardsvr --replSet shard_3 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    ```    
+- Executar no config (substituir o `<IP_CONFIG>` pelo IP do próprio **Config Server**)
+```javascript
+let ip_host='<IP_CONFIG>:27017';
 
-    ip_host='192.168.0.8:27017';
+rs.initiate({
+    _id: 'configserver',
+    configsvr: true,
+    version: 1,
+    members: [
+    {
+        _id: 0,
+        host: ip_host,
+    },
+    ],
+});
+```
 
-    rs.initiate({
-      _id: 'configserver',
-      configsvr: true,
-      version: 1,
-      members: [
-        {
-          _id: 0,
-          host: ip_host,
-        },
-      ],
+- Configurar os *shards* (substituir o IP de cada um dos *shards*)
+- A configuração abaixo deve ser executada em qualquer um dos três *shards*
+
+```javascript
+let ip_host_1='<IP_SHARD_1>:27017';
+
+let ip_host_2='<IP_SHARD_2>:27017';
+
+let ip_host_3='<IP_SHARD_3>:27017';
+
+rs.initiate( {
+    _id : "shard",
+    members: [
+        { _id: 0, host: ip_host_1 },
+        { _id: 1, host: ip_host_2 },
+        { _id: 2, host: ip_host_3 }
+    ]
     });
-    ```
+```
+- Configurando o roteador adicionando os *shards* participantes
+```javascript
+let ip_host_1='<IP_SHARD_1>:27017';
 
-- Configurar os shards
+let ip_host_2='<IP_SHARD_2>:27017';
 
-    ```javascript
-         rs.initiate( {
-        _id : "shard",
-        members: [
-            { _id: 0, host: "192.168.0.6:27017" },
-            { _id: 1, host: "192.168.0.7:27017" },
-            { _id: 2, host: "192.168.0.8:27017" }
-        ]
-        })
-    ```
-    
-- Configurando o roteador
+let ip_host_3='<IP_SHARD_3>:27017';
 
-    ```javascript
-    sh.addShard('shard/192.168.0.7:27017');
-    sh.addShard('shard/192.168.0.6:27017');
-    sh.addShard('shard/192.168.0.8:27017');
-    ```
+sh.addShard('shard/' + ip_host_1);
+sh.addShard('shard/' + ip_host_2);
+sh.addShard('shard/' + ip_host_3);
+```
 - Habilitar o sharding em um banco de dados
 
 ```javascript
 sh.enableSharding('clientes')
-
 ```
-    
-- Adicionando sharding em uma Collection
+- Adicionando *sharding* em uma Collection
 ```javascript
 sh.shardCollection("clientes.ficha", { cpf : "hashed" } )
 sh.status()
 ```
 - Verificando a distribuição no router
-
 ```javascript
+use clientes
 db.ficha.getShardDistribution()
 ```
+- Inserindo clientes aleatórios
+```javascript
+for (let i = 0; i < 50000; i+=2000) {
+  print('CPF: ' + i);
+  db.ficha.insert({ cpf: i });
+}
+```
+
     
