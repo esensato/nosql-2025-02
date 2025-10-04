@@ -41,3 +41,27 @@
 > db.imovel.aggregate([ {$group: {_id: "$bairro", total:{$sum: 1}}},
 ... {$sort:{total: -1}}
 ... ])
+
+db.createCollection("proprietario", {
+validator: {
+    $jsonSchema: {
+        bsonType: "object",
+        title: "Validação de Proprietário",
+        properties: {
+            nome: {
+            bsonType: "string",
+            description: "'nome' deve ser uma string e obrigatório"
+            },
+            cpf: {
+            bsonType: "int",
+            description: "'cpf' deve ser um inteiro e obrigatório"
+            },
+            total_imoveis: {
+            bsonType: "int",
+            minimum: 1,
+            description: "'total_imoveis' deve ser maior do que zero"
+            }
+        }
+    }
+}
+} )

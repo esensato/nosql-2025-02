@@ -591,10 +591,14 @@ app.listen(3000, async () => {
 
 - **MongoDB** possui uma série de [drivers](https://docs.mongodb.com/drivers/) para várias linguagens de programação
 - Especificamente para **Nodejs** existe o [driver mongodb](https://mongodb.github.io/node-mongodb-native/)
+- Instalar o `nodejs`
+```bash
+apk add nodejs npm
+```
 - Criar uma pasta `mkdir imobiliaria`
 - Acessar a pasta `cd imobiliaria`
 - Iniciar um projeto **Nodejs** `npm init -y`
-- Instalar o cliente **MongoDB** para **Nodejs** `npm install mongodb --save`
+- Instalar o cliente **MongoDB** para **Nodejs** `npm install mongodb@4.0.0 --save`
 - Criar o arquivo abaixo com o nome `testeMongodb.js`
 
 ```javascript
@@ -708,9 +712,9 @@ mongod --replSet "rs0" --dbpath /root/mongodb --fork --logpath /dev/null --bind_
 rs.initiate( {
 _id : "rs0",
 members: [
-    { _id: 0, host: "192.168.0.12:27017" },
-    { _id: 1, host: "192.168.0.13:27017" },
-    { _id: 2, host: "192.168.0.14:27017" }
+    { _id: 0, host: "192.168.0.34:27017" },
+    { _id: 1, host: "192.168.0.33:27017" },
+    { _id: 2, host: "192.168.0.32:27017" }
 ]
 })
 ```
@@ -805,9 +809,9 @@ run().catch(console.dir);
     ```
     - Shards (instanciar 3)
     ```javascript
-    mongod --shardsvr --replSet shard_1 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
-    mongod --shardsvr --replSet shard_2 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
-    mongod --shardsvr --replSet shard_3 --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
+    mongod --shardsvr --replSet shard --port 27017 --dbpath ~/mongodb --fork --logpath /dev/null --bind_ip_all    
     ```    
 - Executar no config (substituir o `<IP_CONFIG>` pelo IP do próprio **Config Server**)
 ```javascript
