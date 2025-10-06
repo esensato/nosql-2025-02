@@ -4,9 +4,6 @@
 
 https://cassandra.apache.org/
 
-## Conceitos
-
-- É um banco de dados baseado em colunas
 
 ## Instalação
 
@@ -17,10 +14,6 @@ https://cassandra.apache.org/
 [Docker Playground](https://labs.play-with-docker.com/)
 
 ## Preparando o Ambiente
-
-- Criar uma imagem baseada no centOS
-
-`docker pull ubuntu`
 
 - Criar uma rede local
 ```bash
