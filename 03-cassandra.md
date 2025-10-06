@@ -1,35 +1,12 @@
 # Cassandra
 
 ## Referência
-
 https://cassandra.apache.org/
-
-
 ## Instalação
-
 - [Instalação Cassandra](https://cassandra.apache.org/doc/latest/cassandra/getting_started/installing.html)
-
 ## Utilizando Docker
-
 [Docker Playground](https://labs.play-with-docker.com/)
-
 ## Preparando o Ambiente
-
-- Criar uma rede local
-```bash
-docker network create cassandra-net
-docker network list
-```
-- Iniciar um `container`
-```bash
-docker run -it -p 9042:9042 -p 7000:7000 -p 7199:7199 --name cassandra1 --network cassandra-net ubuntu
-```
-- Atualizar o repositório do `yum`
-```bash
-apt upgrade -y
-apt install openjdk-11-jdk -y
-```
-#### Criar a imagem com o *Dockerfile*
 - Efetuar download dos pacotes necessários
 ```bash
 mkdir cassandra
