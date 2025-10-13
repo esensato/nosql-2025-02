@@ -201,7 +201,7 @@ INSERT INTO cliente (estado, nome) VALUES ('RJ', 'Paulo');
 ```
 - Visualizar os *tokens* gerados para cada registro
 ```sql
-SELECT id, TOKEN(id) FROM clientes;
+SELECT estado, TOKEN(estado) FROM cliente;
 ```
 - Visualizar o intervalo de nós (ele varia de - para + o valor exibido)
 ```sql
