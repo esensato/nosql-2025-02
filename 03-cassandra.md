@@ -277,6 +277,7 @@ nodetool status
         - id_ordem - código cotação (sequencial)
         - id_empresa - código da empresa (tabela *Acao*)
         - data_hora - data e hora (timestamp) do valor da ação
+        - tipo - tipo da orgem (V - venda ou C - compra)
         - preco - preço máximo para compra ou preço mínimo para a venda
 - Criar um *keyspace* com o nome **bolsa_de_valores** com fator de replicação 1 e utilizando o *SimpleStrategy*
 - Criar as tabelas levando em consideração alguns requisitos:
