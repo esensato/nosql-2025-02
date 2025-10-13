@@ -185,19 +185,19 @@ WITH REPLICATION = {
 ```
 - Criar uma tabela para armazenar dados de clientes (com a chave primária `id`)
 ```sql
-CREATE TABLE clientes (
-    id int,
+CREATE TABLE cliente (
+    estado text,
     nome text,
-    PRIMARY KEY (id)
-);
+    PRIMARY KEY ((estado), nome)
+) WITH CLUSTERING ORDER BY (nome ASC);
 ```
 - Inserir alguns dados:
 ```sql
-INSERT INTO clientes (id, nome) VALUES (1, 'Joao');
-INSERT INTO clientes (id, nome) VALUES (2, 'Maria');
-INSERT INTO clientes (id, nome) VALUES (3, 'Carlos');
-INSERT INTO clientes (id, nome) VALUES (4, 'Ana');
-INSERT INTO clientes (id, nome) VALUES (5, 'Paulo');
+INSERT INTO cliente (estado, nome) VALUES ('SP', 'Joao');
+INSERT INTO cliente (estado, nome) VALUES ('SP', 'Maria');
+INSERT INTO cliente (estado, nome) VALUES ('MG', 'Carlos');
+INSERT INTO cliente (estado, nome) VALUES ('MG', 'Ana');
+INSERT INTO cliente (estado, nome) VALUES ('RJ', 'Paulo');
 ```
 - Visualizar os *tokens* gerados para cada registro
 ```sql
@@ -206,10 +206,6 @@ SELECT id, TOKEN(id) FROM clientes;
 - Visualizar o intervalo de nós (ele varia de - para + o valor exibido)
 ```sql
 SELECT tokens FROM system.local;
-```
-- Simulando a existência de mais de um nó (por exemplo 3)
-```sql
-SELECT id, TOKEN(id) % 3 AS "nó_simulado" FROM clientes;
 ```
 - Verificar os *tokens* dentro do *ring*
 ```bash
@@ -267,3 +263,24 @@ cassandra -R
 ```bash
 nodetool status
 ```
+### Exercício
+- Modelar um banco de dados **Cassandra** para um cenário de compra e venda de ações na bolsa de valores considerando os seguintes atributos:
+    - **Acao** (representa uma ação):
+        - id_empresa - código (por exemplo, *PETR4*, *ELET3*, *VALE3*, etc...)
+        - empresa - nome da empresa
+    - **Cotacao** (representa as cotações de uma ação):
+        - id_cotacao - código cotação (sequencial)
+        - id_empresa - código da empresa (tabela *Acao*)
+        - data_hora - data e hora (timestamp) do valor da ação
+        - preco - valor da ação
+    - **Ordem** (ordem de compra ou venda):
+        - id_ordem - código cotação (sequencial)
+        - id_empresa - código da empresa (tabela *Acao*)
+        - data_hora - data e hora (timestamp) do valor da ação
+        - preco - preço máximo para compra ou preço mínimo para a venda
+- Criar um *keyspace* com o nome **bolsa_de_valores** com fator de replicação 1 e utilizando o *SimpleStrategy*
+- Criar as tabelas levando em consideração alguns requisitos:
+    - Consultar os valores das cotações de uma ação em um determinado dia;
+    - Consutlar ordens de compra por empresa, dia e tipo
+
+        
