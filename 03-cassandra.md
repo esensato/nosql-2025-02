@@ -281,7 +281,7 @@ nodetool status
         - preco - preço máximo para compra ou preço mínimo para a venda
 - Criar um *keyspace* com o nome **bolsa_de_valores** com fator de replicação 1 e utilizando o *SimpleStrategy*
 - Criar as tabelas levando em consideração alguns requisitos:
-    - Consultar os valores das cotações de uma ação em um determinado dia;
+    - Consultar os valores das cotações de uma ação (pelo **id_empresa**) em um determinado dia;
     - Consutlar ordens de compra por empresa, dia e tipo
 
         
