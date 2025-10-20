@@ -118,17 +118,47 @@ ps -ef
 kill -9 <PID>
 ```
 #### Container Já Pronto
+- Necessário atualizar os parâmetros de inicialização do *java*
+```bash
+cat <<EOF > jvm-server.options
+-ea
+-XX:+UseThreadPriorities
+-XX:+HeapDumpOnOutOfMemoryError
+-Xss256k
+-XX:+AlwaysPreTouch
+-XX:-UseBiasedLocking
+-XX:+UseTLAB
+-XX:+ResizeTLAB
+-XX:+UseNUMA
+-XX:+PerfDisableSharedMem
+-Djava.net.preferIPv4Stack=true
+-Xms1G
+-Xmx1G
+EOF
+```
+- Criar uma nova imagem utilizando uma outra imagem do *cassandra* pré-configurada
+```bash
+cat <<EOF > Dockerfile
+FROM cassandra:latest
+RUN rm /opt/cassandra/conf/jvm-server.options
+COPY jvm-server.options /opt/cassandra/conf
+EOF
+```
+- Criar a imagem com base no *Dockerfile* acima
+```bash
+docker build . -t cassandra_local
+```
 - Para executar apenas um nó
 ```bash
-docker run -d --name cassandra cassandra:latest
+docker run -d --name cassandra cassandra_local
 docker logs -f cassandra
 docker exec -it cassandra cqlsh
 ```
 - Para executar mais de um nó
 ```bash
 docker network create cassandra-net
-docker run -d --name cassandra_1 --hostname cassandra_1 --network cassandra-net cassandra:latest
-docker run -d --name cassandra_2 --hostname cassandra_2 --network cassandra-net -e CASSANDRA_SEEDS=cassandra_1 cassandra:latest
+docker run -d --name cassandra_1 --hostname cassandra_1 --network cassandra-net cassandra_local
+docker run -d --name cassandra_2 --hostname cassandra_2 --network cassandra-net -e CASSANDRA_SEEDS=cassandra_1 cassandra_local
 docker exec -it cassandra_1 nodetool status
 ```
 - Configurações específicas (caso necessário)
@@ -138,7 +168,7 @@ docker run -d --name cassandra_1 --hostname cassandra_1 --network cassandra-net 
   -e CASSANDRA_DC=dc1 \
   -e CASSANDRA_RACK=rack1 \
   -e CASSANDRA_NUM_TOKENS=8 \
-  cassandra:latest
+  cassandra_local
 ```
 #### Clusters, Nós e Racks
 - *Clusters* são as maiores estruturas do *cassandra*
@@ -169,10 +199,11 @@ nodetool gossipinfo
 #### Keyspaces
 - Criar um *keyspace* utilizando a estratégia de replicação `SimpleStrategy` considerando apenas um único nó no cluster
 ```sql
+DESCRIBE KEYSPACES;
 CREATE KEYSPACE demo
 WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 DESCRIBE KEYSPACE demo;
-USE demo
+USE demo;
 ```
 - Outra forma de criar o *keyspace* distribuído entre mais de um *datacenter* (só funciona para múltiplos *data-centers*)
 ```sql
@@ -263,6 +294,7 @@ cassandra -R
 ```bash
 nodetool status
 ```
+***
 ### Exercício
 - Modelar um banco de dados **Cassandra** para um cenário de compra e venda de ações na bolsa de valores considerando os seguintes atributos:
     - **Acao** (representa uma ação):
@@ -283,5 +315,291 @@ nodetool status
 - Criar as tabelas levando em consideração alguns requisitos:
     - Consultar os valores das cotações de uma ação (pelo **id_empresa**) em um determinado dia;
     - Consutlar ordens de compra por empresa, dia e tipo
+***
+### Tipos de Dados Nativos
+- **Cassandra** suporta os seguintes tipos de dados nativos:
+    - `ascii`, `text`, `varchar` para texto;
+    - `bigint`, `int`, `smallint`, `tinyint`, `varint` para tipos inteiros;
+    - `decimal`, `double`, `float` para tipos decimais;
+    - `boolean` para *true* / *false*
+    - `date`, `time`, `timestamp` para data, hora e *timestamp*
+#### Alguns tipos de dados especiais
+- Contadores
+```sql
+CREATE TABLE visitas_por_pagina (
+    pagina TEXT PRIMARY KEY,
+    total_visitas COUNTER
+);
+```
+- Atualizando contadores (somente podem ser atualizados!)
+```sql
+UPDATE visitas_por_pagina
+SET total_visitas = total_visitas + 1
+WHERE pagina = 'index.html';
 
-        
+// ERRO!!!!
+INSERT INTO visitas_por_pagina(pagina, total_visitas) VALUES ('erro.html', 10);
+
+SELECT * FROM visitas_por_pagina;
+```
+- Identificadores únicos
+```sql
+SELECT now() AS agora FROM system.local;
+```
+#### Conversões Entre Tipos (Casting)
+- Utilizar a expressão `cast (valor as tipo)`
+```sql
+CREATE KEYSPACE demo
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+USE demo;
+CREATE TABLE medida (id int, largura float, altura float, PRIMARY KEY (id));
+INSERT INTO medida (id, largura, altura) VALUES (1, 12.234, 15.4343);
+SELECT cast(largura as int) AS largura_int, cast(altura as int) AS altura_int FROM medida;
+```
+#### Built-in Functions
+- Obter o *timestamp*, data e hora atuais
+```sql
+SELECT current_timestamp() AS agora FROM system.local;
+SELECT current_date() AS agora FROM system.local;
+SELECT current_time() AS agora FROM system.local;
+```
+- Gerar identificadores únicos (`uuid`)
+```sql
+SELECT uuid() FROM system.local;
+```
+- Mascarar dados (habilitar o `dynamic_data_masking_enabled: true`)
+```sql
+CREATE TABLE usuarios (
+    id UUID PRIMARY KEY,
+    nome TEXT,
+    email TEXT MASKED WITH mask_email()
+);
+
+INSERT INTO usuarios (id, nome, email) VALUES (uuid(), 'Edson Sensato', 'edson.sensato@example.com');
+
+SELECT nome, email FROM usuarios;
+
+SELECT mask_null(email), mask_default(email) FROM usuarios;
+```
+#### Trabalhando com Data / Hora
+- Existem várias formas de utilizar data / hora em *CQL*
+```sql
+CREATE TABLE log_acesso (
+    data DATE,
+    hora TIME,
+    usuario TEXT,
+    PRIMARY KEY (data, hora)
+);
+
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-01', '05:15:00', 'usuario1');
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-01', '07:00:00', 'usuario2');
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-15', '05:15:00', 'usuario3');
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-16', '05:15:00', 'usuario1');
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-01', '08:00:00', 'usuario2');
+INSERT INTO log_acesso(data, hora, usuario) values ('2025-10-02', '09:30:00', 'usuario3');
+
+SELECT * FROM log_acesso WHERE data = '2025-10-01';
+SELECT * FROM log_acesso WHERE data = '2025-10-01' AND hora = '05:15:00';
+```
+***
+### Materialized Views
+- São visualizações adicionais criadas a partir de consultas a tabelas já existentes
+- Devem ser habilitadas no `cassandra.yaml` no parâmetro `materialized_views_enabled`
+```bash
+docker cp cassandra:/opt/cassandra/conf/cassandra.yaml .
+```
+- Editar o arquivo `cassandra.yaml` para definir `materialized_views_enabled: true`
+- Copiar de volta o arquivo para o *container*    
+```bash
+docker cp cassandra.yaml cassandra:/opt/cassandra/conf/cassandra.yaml
+```
+- Reiniciar o *container*
+```bash
+docker stop cassandra
+docker start cassandra
+```
+- Por exemplo, uma tabela que armazena produtos tendo como chave o `id_produto` somente permite consultas por este campo
+```sql
+CREATE TABLE produto (
+    id UUID,
+    descricao TEXT,
+    fornecedor TEXT,
+    cor TEXT,
+    PRIMARY KEY (id)
+);
+
+INSERT INTO produto (id, descricao, fornecedor, cor) VALUES (uuid(), 'Caneta para desenho', 'Canetus Inc', 'Azul');
+INSERT INTO produto (id, descricao, fornecedor, cor) VALUES (uuid(), 'Caneta para desenho', 'Canetus Inc', 'Verde');
+INSERT INTO produto (id, descricao, fornecedor, cor) VALUES (uuid(), 'Pincel para pintura', 'Pincelus Inc', 'Amarelo');
+INSERT INTO produto (id, descricao, fornecedor) VALUES (uuid(), 'Borracha', 'Apagus Inc');
+```
+- Criar uma *materialized view* que permita a consulta pela cor do produto
+```sql
+CREATE MATERIALIZED VIEW produto_cor AS
+   SELECT * FROM produto
+   WHERE cor IS NOT NULL
+   AND id IS NOT NULL
+   PRIMARY KEY (cor, id);
+
+CREATE MATERIALIZED VIEW produto_fornecedor AS
+   SELECT * FROM produto
+   WHERE fornecedor IS NOT NULL
+   AND id IS NOT NULL
+   PRIMARY KEY (fornecedor, id);
+
+SELECT * FROM produto_cor WHERE cor = 'Amarelo';
+
+SELECT * FROM produto_fornecedor WHERE fornecedor = 'Canetus Inc';
+```
+***
+### Triggers
+- **Cassandra** permite a criação de *triggers* implementadas em *Java*
+- Por exemplo, considerar uma tabela de produtos em estoque que deve ser atualizada com base nos pedidos de determinados produtos
+- Criar a estrutura de tabelas:
+```sql
+CREATE KEYSPACE loja
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+USE loja;
+
+CREATE TABLE estoque (
+    id_produto TEXT PRIMARY KEY,
+    total INT
+);
+
+CREATE TABLE pedido (
+    id UUID PRIMARY KEY,
+    id_produto TEXT,
+    descricao TEXT,
+    data_venda TIMESTAMP,
+    quantidade INT
+);
+```
+- Criar a classe *java* para implementar a *trigger*
+```java
+package org.apache.cassandra.triggers;
+
+import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.cassandra.db.Mutation;
+import org.apache.cassandra.db.partitions.Partition;
+import org.apache.cassandra.db.rows.Row;
+import org.apache.cassandra.db.rows.Cell;
+import org.apache.cassandra.db.marshal.UTF8Type;
+import org.apache.cassandra.db.marshal.Int32Type;
+import org.apache.cassandra.schema.TableMetadata;
+import org.apache.cassandra.triggers.ITrigger;
+
+import com.google.common.collect.Lists;
+
+public class TriggerAtualizaEstoque implements ITrigger {
+
+    @Override
+    public Collection<Mutation> augment(Partition update) {
+        TableMetadata meta = update.metadata();
+
+        // Somente executa se for a tabela "pedido" do keyspace "loja"
+        if (!meta.keyspace.equals("loja") || !meta.name.equals("pedido"))
+            return Collections.emptyList();
+
+        Row row = update.unfilteredIterator().next().row();
+
+        // Obtém os valores do registro inserido
+        Cell<?> cellProduto = row.getCell(meta.getColumn("id_produto"));
+        Cell<?> cellQuantidade = row.getCell(meta.getColumn("quantidade"));
+
+        if (cellProduto == null || cellQuantidade == null)
+            return Collections.emptyList();
+
+        String idProduto = UTF8Type.instance.compose(cellProduto.value());
+        int quantidade = Int32Type.instance.compose(cellQuantidade.value());
+
+        // Cria mutação para atualizar o estoque
+        Mutation mut = Mutation.simpleBuilder("loja", "estoque")
+                .update()
+                .where("id_produto", idProduto)
+                .increment("total", -quantidade) // subtrai a quantidade do estoque
+                .build();
+
+        return Collections.singletonList(mut);
+    }
+}
+```
+- A classe deve ser compilada e o `.class` gerado deve ser copiado para `$CASSANDRA_HOME/triggers/`
+- Utilizar as bibliotecas do diretório `$CASSANDRA_HOME/lib/*`
+```bash
+javac -cp "$CASSANDRA_HOME/lib/*" TriggerAtualizaEstoque.java
+```
+- Criar a *trigger* na tabela `pedido`
+```sql
+USE loja;
+
+CREATE TRIGGER trg_atualiza_estoque
+ON pedido
+USING 'org.apache.cassandra.triggers.TriggerAtualizaEstoque';
+```
+- Reiniciar o **Cassandra**
+***
+### User-Defined Functions (UDFs)
+- Além das *triggers* também é possível criar funções customizadas no **Cassandra**
+- Necessário habilitar a permissão `enable_user_defined_functions: true` no `$CASSANDRA_HOME/conf/cassandra.yaml`
+- Por exemplo, uma função para descrever o nível de estoque dos produtos conforme o critério:
+    - Menos de 100 - BAIXO
+    - Entre 101 e 500 - MÉDIO
+    - Acima de 500 - ALTO
+- Criar a função
+```sql
+CREATE OR REPLACE FUNCTION nivel_estoque(qtd int)
+RETURNS NULL ON NULL INPUT
+RETURNS text
+LANGUAGE java
+AS $$
+    if (qtd < 100)
+        return "BAIXO";
+    else if (qtd < 200)
+        return "MÉDIO";
+    else
+        return "ALTO";
+$$;
+```
+- Testar a função
+```sql
+SELECT nivel_estoque(total) AS nivel, total FROM estoque;
+```
+***
+### Funções Agregadoras
+- **Cassandra** possui algumas funções de agregação de dados como `count`, `min`, `max`, `sum` e `avg`
+- Pode-se criar uma função agregadora personalizada também
+```sql
+CREATE OR REPLACE FUNCTION state_avg(state tuple<int, int>, val int)
+CALLED ON NULL INPUT
+RETURNS tuple<int, int>
+LANGUAGE javascript AS
+$$
+    if (state == null) state = new Tuple(0, 0);
+    if (val != null) {
+        state.set(0, state.get(0) + val); // soma
+        state.set(1, state.get(1) + 1);   // contador
+    }
+    state;
+$$;
+
+CREATE OR REPLACE FUNCTION final_avg(state tuple<int, int>)
+CALLED ON NULL INPUT
+RETURNS double
+LANGUAGE javascript AS
+$$
+    if (state == null || state.get(1) == 0) return null;
+    state.get(0) / state.get(1);
+$$;
+
+CREATE OR REPLACE AGGREGATE avg_udf(int)
+SFUNC state_avg
+STYPE tuple<int, int>
+FINALFUNC final_avg
+INITCOND (0, 0);
+
+SELECT avg_udf(quantidade) AS media_quantidade FROM vendas;
+```
