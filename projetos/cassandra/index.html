@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>🎬 Avaliação de Filmes (Mock)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="mb-4 text-center">🎬 Avaliação de Filmes (Mock)</h1>
+
+        <!-- Formulário para adicionar filme -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Adicionar novo filme</h5>
+                <div class="input-group">
+                    <input type="text" id="novoFilme" class="form-control" placeholder="Nome do filme">
+                    <button class="btn btn-primary" onclick="adicionarFilme()">Adicionar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de filmes -->
+        <div id="listaFilmes" class="row g-3"></div>
+    </div>
+
+    <!-- Modal de avaliações -->
+    <div class="modal fade" id="avaliacoesModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="modalTitulo" class="modal-title">Avaliações</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul id="listaAvaliacoes" class="list-group mb-3"></ul>
+
+                    <h6>Nova avaliação</h6>
+                    <input type="text" id="usuario" class="form-control mb-2" placeholder="Seu nome">
+                    <input type="number" id="nota" class="form-control mb-2" placeholder="Nota (0 a 10)" min="0"
+                        max="10">
+                    <button class="btn btn-success w-100" onclick="enviarAvaliacao()">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ----- Mock de filmes -----
+        let filmes = [
+            { id: "1", nome: "Matrix" },
+            { id: "2", nome: "O Poderoso Chefão" },
+            { id: "3", nome: "Interestelar" }
+        ];
+
+        // Mock de avaliações (por filme)
+        const avaliacoesMock = {
+            "1": [
+                { usuario: "Alice", nota: 9, data: new Date("2025-10-01T10:00:00") },
+                { usuario: "Bob", nota: 8, data: new Date("2025-10-02T12:30:00") }
+            ],
+            "2": [
+                { usuario: "Carlos", nota: 10, data: new Date("2025-10-03T14:00:00") }
+            ],
+            "3": [
+                { usuario: "Diana", nota: 7, data: new Date("2025-10-04T16:45:00") }
+            ]
+        };
+
+        // ----- Função para carregar filmes -----
+        function carregarFilmes() {
+            const container = document.getElementById("listaFilmes");
+            container.innerHTML = "";
+
+            filmes.forEach(f => {
+                container.innerHTML += `
+          <div class="col-md-4">
+            <div class="card shadow-sm">
+              <div class="card-body text-center">
+                <h5 class="card-title">${f.nome}</h5>
+                <button class="btn btn-outline-primary btn-sm"
+                  onclick="verAvaliacoes('${f.id}', '${f.nome}')">Ver avaliações</button>
+              </div>
+            </div>
+          </div>`;
+            });
+        }
+
+        // ----- Função para adicionar filme -----
+        function adicionarFilme() {
+            const nome = document.getElementById("novoFilme").value.trim();
+            if (!nome) return alert("Digite o nome do filme!");
+
+            // Mock: adiciona localmente na lista
+            const id = (filmes.length + 1).toString();
+            filmes.push({ id, nome });
+            avaliacoesMock[id] = []; // inicializa avaliações vazias
+
+            document.getElementById("novoFilme").value = "";
+            carregarFilmes();
+        }
+
+        // ----- Função para ver avaliações -----
+        function verAvaliacoes(id_filme, nome) {
+            const modalTitulo = document.getElementById("modalTitulo");
+            modalTitulo.textContent = `Avaliações de: ${nome}`;
+
+            const lista = document.getElementById("listaAvaliacoes");
+            const avals = avaliacoesMock[id_filme] || [];
+            lista.innerHTML = avals.map(a => `
+        <li class="list-group-item">
+          <strong>${a.usuario}</strong> — Nota ${a.nota} <br>
+          <small>${a.data.toLocaleString()}</small>
+        </li>`).join("");
+
+            // Guarda o filme atual para novas avaliações
+            filmeAtual = id_filme;
+
+            // Mostra o modal
+            new bootstrap.Modal(document.getElementById("avaliacoesModal")).show();
+        }
+
+        // ----- Função para enviar avaliação -----
+        let filmeAtual = null;
+        function enviarAvaliacao() {
+            const usuario = document.getElementById("usuario").value.trim();
+            const nota = parseInt(document.getElementById("nota").value);
+
+            if (!usuario || isNaN(nota)) return alert("Preencha nome e nota!");
+
+            // Mock: adiciona localmente na lista
+            avaliacoesMock[filmeAtual].push({ usuario, nota, data: new Date() });
+
+            document.getElementById("usuario").value = "";
+            document.getElementById("nota").value = "";
+
+            // Atualiza o modal
+            verAvaliacoes(filmeAtual, filmes.find(f => f.id === filmeAtual).nome);
+        }
+
+        // ----- Inicializa a página -----
+        carregarFilmes();
+    </script>
+</body>
+
+</html>

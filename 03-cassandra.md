@@ -603,3 +603,211 @@ INITCOND (0, 0);
 
 SELECT avg_udf(quantidade) AS media_quantidade FROM vendas;
 ```
+***
+### Integração Nodejs
+- **Cassandra** pode ser facilmente integrado com projetos desenvolvidos em diversas linguagens, por exemplo, com *nodejs*
+- Para isso, basta adicionar ao projeto o *driver* necessário e efetuar as chamadas ao **Cassandra** via *API*
+- Instalar o *nodejs* e o *npm*
+```bash
+apk add nodejs npm
+```bash
+- Criar um projeto *nodejs* e adicionar as dependências
+```bash
+mkdir node-cassandra-sensor
+cd node-cassandra-sensor
+npm init -y
+npm install express cassandra-driver
+```
+- Conectar-se ao *Cassandra* via *cqlsh*
+```bash
+docker exec -it cassandra cqlsh
+```
+- Configurar o banco de dados
+```sql
+CREATE KEYSPACE IF NOT EXISTS sensores
+WITH replication = {
+  'class': 'SimpleStrategy',
+  'replication_factor': 1
+};
+
+USE sensores;
+
+CREATE TABLE IF NOT EXISTS dados (
+  sensor text,
+  timestamp timestamp,
+  temperatura double,
+  PRIMARY KEY (sensor, timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+```
+
+- Criar a conexão com o **Cassandra** em um arquivo `cassandra.js`
+```bash
+touch cassandra.js
+```
+- Obter o *IP* do *container* executando o **Cassandra**
+```bash
+docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' cassandra
+```
+- Incluir o seguinte conteúdo ao arquivo
+```javascript
+const cassandra = require('cassandra-driver');
+
+const client = new cassandra.Client({
+  contactPoints: ['IP_CONTAINER'], // Substituir o IP_CONTAINER!!!!
+  localDataCenter: 'datacenter1', // Nome do seu data center
+  keyspace: 'sensores'
+});
+
+module.exports = client;
+```
+- Criar a implementação do servidor
+```bash
+touch index.js
+```
+- Incluir o seguinte conteúdo ao arquivo
+```javascript
+const express = require('express');
+const client = require('./cassandra');
+
+const app = express();
+const PORT = 3000;
+
+// Middleware para ler JSON
+app.use(express.json());
+
+// Endpoint POST para receber dados do sensor
+app.post('/dados', async (req, res) => {
+  try {
+    const { sensor, temperatura } = req.body;
+
+    if (!sensor || temperatura === undefined) {
+      return res.status(400).json({ erro: 'Campos sensor e temperatura são obrigatórios.' });
+    }
+
+    const timestamp = new Date();
+
+    const query = 'INSERT INTO dados (sensor, timestamp, temperatura) VALUES (?, ?, ?)';
+    const params = [sensor, timestamp, temperatura];
+
+    await client.execute(query, params, { prepare: true });
+
+    res.json({ mensagem: 'Dados inseridos com sucesso!', sensor, temperatura, timestamp });
+  } catch (err) {
+    console.error('Erro ao inserir dados:', err);
+    res.status(500).json({ erro: 'Falha ao inserir dados no Cassandra.' });
+  }
+});
+
+// Inicializa servidor
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
+});
+```
+- Iniciar o servidor (executando na porta **3000**)
+```bash
+node index.js
+```
+- Efetuar um teste simples via *curl* (obter a *URL* no *docker play*)
+```bash
+curl http://ip172-18-0-56-d3vtmic69qi000cqlahg-3000.direct.labs.play-with-docker.com:3000/ \
+  -H "Content-Type: application/json" \
+  -d '{"sensor":"ESP32","temperatura":27.4}'
+```
+- Criar um *endpoint* para exibir as temperaturas já lidas
+```javascript
+// Endpoint GET para listar todos os dados armazenados
+app.get('/dados', async (req, res) => {
+  try {
+    const query = 'SELECT sensor, timestamp, temperatura FROM dados';
+    const result = await client.execute(query);
+
+    // Mapeia os resultados em um formato legível
+    const dados = result.rows.map(row => ({
+      sensor: row.sensor,
+      temperatura: row.temperatura,
+      timestamp: row.timestamp
+    }));
+
+    res.json(dados);
+  } catch (err) {
+    console.error('Erro ao buscar dados:', err);
+    res.status(500).json({ erro: 'Falha ao consultar dados no Cassandra.' });
+  }
+});
+```
+- Criar um emulador **Arduino** [Woki - ESP 32](https://wokwi.com/projects/new/esp32) com um sensor de temperatura (**DS 18B20**) para enviar dados ao *endpoint* criado acima
+```c++
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+
+#define TEMPLATE "{\"sensor\":\"ESP32\",\"temperatura\":%d}"
+
+OneWire oneWire(15);
+DallasTemperature sensor(&oneWire);
+
+void setup(void) {
+
+  Serial.begin(115200);
+  Serial.print("Conectando-se ao Wi-Fi");
+  // Wokwi simula uma rede WiFi com acesso total à Internet com o usuário Wokwi-GUEST
+  // não precisa de senha
+  WiFi.begin("Wokwi-GUEST", "", 6);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(100);
+    Serial.print(".");
+  }
+  Serial.println(" Conectado!");
+  Serial.println(WiFi.localIP());
+
+  delay(2);
+  sensor.begin();
+  delay(20);
+
+}
+
+void loop() {
+
+  // Realizar a requisição POST
+  if (WiFi.status() == WL_CONNECTED) {
+
+    sensor.requestTemperatures();
+    Serial.print("Temperature is: ");
+    delay(10);
+    Serial.println(sensor.getTempCByIndex(0));
+    delay(1000);
+
+    HTTPClient http;
+
+    // Defina o URL do servidor que receberá a requisição POST
+    http.begin("http://ip172-18-0-56-d3vtmic69qi000cqlahg-3000.direct.labs.play-with-docker.com:3000/dados"); // Substitua pela URL do servidor
+
+    // Defina o tipo de conteúdo (JSON, neste caso)
+    http.addHeader("Content-Type", "application/json");
+
+    // Dados JSON que serão enviados
+    int temp = sensor.getTempCByIndex(0);
+    char postData[100];
+    // Copia a temperatura para o %d definido no template (TEMPLATE)
+    sprintf(postData, TEMPLATE, temp);
+
+    // Realiza a requisição POST
+    int httpResponseCode = http.POST(postData);
+
+    // Verifica a resposta do servidor
+
+    if (httpResponseCode > 0) {
+      String response = http.getString();  // Obtém a resposta
+      Serial.println("Resposta do servidor: " + response);
+    } else {
+      Serial.println("Erro na requisição POST: " + httpResponseCode);
+    }
+
+    http.end();  // Fecha a conexão
+  } else {
+    Serial.println("Falha na conexão Wi-Fi");
+  }
+
+}
+```
