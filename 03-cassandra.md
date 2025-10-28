@@ -481,6 +481,7 @@ package org.apache.cassandra.triggers;
 
 import java.nio.ByteBuffer;
 import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.cassandra.db.Mutation;
@@ -492,8 +493,6 @@ import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.schema.TableMetadata;
 import org.apache.cassandra.triggers.ITrigger;
 
-import com.google.common.collect.Lists;
-
 public class TriggerAtualizaEstoque implements ITrigger {
 
     @Override
@@ -504,7 +503,7 @@ public class TriggerAtualizaEstoque implements ITrigger {
         if (!meta.keyspace.equals("loja") || !meta.name.equals("pedido"))
             return Collections.emptyList();
 
-        Row row = update.unfilteredIterator().next().row();
+        Row row = update.unfilteredIterator().next();
 
         // Obtém os valores do registro inserido
         Cell<?> cellProduto = row.getCell(meta.getColumn("id_produto"));
@@ -527,10 +526,13 @@ public class TriggerAtualizaEstoque implements ITrigger {
     }
 }
 ```
+- Instalar o *java* no **Alpine** com `apk add openjdk17`
+- Criar o arquivo para armazenar o código da classe com `touch TriggerAtualizaEstoque.java`
+- Copiar as bibliotecas do **Cassandra** para o diretório local com `docker cp cassandra:/opt/cassandra/lib .`
 - A classe deve ser compilada e o `.class` gerado deve ser copiado para `$CASSANDRA_HOME/triggers/`
 - Utilizar as bibliotecas do diretório `$CASSANDRA_HOME/lib/*`
 ```bash
-javac -cp "$CASSANDRA_HOME/lib/*" TriggerAtualizaEstoque.java
+javac -cp /lib/* TriggerAtualizaEstoque.java
 ```
 - Criar a *trigger* na tabela `pedido`
 ```sql
@@ -576,7 +578,7 @@ SELECT nivel_estoque(total) AS nivel, total FROM estoque;
 CREATE OR REPLACE FUNCTION state_avg(state tuple<int, int>, val int)
 CALLED ON NULL INPUT
 RETURNS tuple<int, int>
-LANGUAGE javascript AS
+LANGUAGE java AS
 $$
     if (state == null) state = new Tuple(0, 0);
     if (val != null) {
@@ -589,7 +591,7 @@ $$;
 CREATE OR REPLACE FUNCTION final_avg(state tuple<int, int>)
 CALLED ON NULL INPUT
 RETURNS double
-LANGUAGE javascript AS
+LANGUAGE java AS
 $$
     if (state == null || state.get(1) == 0) return null;
     state.get(0) / state.get(1);
@@ -610,7 +612,7 @@ SELECT avg_udf(quantidade) AS media_quantidade FROM vendas;
 - Instalar o *nodejs* e o *npm*
 ```bash
 apk add nodejs npm
-```bash
+```
 - Criar um projeto *nodejs* e adicionar as dependências
 ```bash
 mkdir node-cassandra-sensor
