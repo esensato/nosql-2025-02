@@ -454,7 +454,12 @@ SELECT * FROM produto_fornecedor WHERE fornecedor = 'Canetus Inc';
 ***
 ### Triggers
 - **Cassandra** permite a criação de *triggers* implementadas em *Java*
+- Instalar o *java* no **Alpine** com `apk add openjdk17`
 - Por exemplo, considerar uma tabela de produtos em estoque que deve ser atualizada com base nos pedidos de determinados produtos
+- Executar o *cqlsh*
+```bash
+docker exec -it cassandra cqlsh
+```
 - Criar a estrutura de tabelas:
 ```sql
 CREATE KEYSPACE loja
@@ -464,89 +469,139 @@ USE loja;
 
 CREATE TABLE estoque (
     id_produto TEXT PRIMARY KEY,
-    total INT
+    total COUNTER
 );
 
 CREATE TABLE pedido (
     id UUID PRIMARY KEY,
     id_produto TEXT,
-    descricao TEXT,
-    data_venda TIMESTAMP,
     quantidade INT
 );
+
+UPDATE estoque SET total = total + 100 WHERE id_produto = 'PROD1';
 ```
 - Criar a classe *java* para implementar a *trigger*
 ```java
 package org.apache.cassandra.triggers;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
+import org.apache.cassandra.cql3.ColumnIdentifier;
 import org.apache.cassandra.db.Mutation;
-import org.apache.cassandra.db.partitions.Partition;
-import org.apache.cassandra.db.rows.Row;
-import org.apache.cassandra.db.rows.Cell;
-import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.db.marshal.Int32Type;
+import org.apache.cassandra.db.marshal.UTF8Type;
+import org.apache.cassandra.db.partitions.Partition;
+import org.apache.cassandra.db.rows.Cell;
+import org.apache.cassandra.db.rows.Row;
+import org.apache.cassandra.db.rows.Unfiltered;
+import org.apache.cassandra.db.rows.UnfilteredRowIterator;
+import org.apache.cassandra.schema.ColumnMetadata;
+import org.apache.cassandra.schema.Schema;
 import org.apache.cassandra.schema.TableMetadata;
-import org.apache.cassandra.triggers.ITrigger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TriggerAtualizaEstoque implements ITrigger {
 
+	private static final Logger logger = LoggerFactory.getLogger(TriggerAtualizaEstoque.class);
+
+	
     @Override
     public Collection<Mutation> augment(Partition update) {
         TableMetadata meta = update.metadata();
+        
+        logger.info("TriggerAtualizaEstoque chamada para tabela: {}.{}", meta.keyspace, meta.name);
 
-        // Somente executa se for a tabela "pedido" do keyspace "loja"
-        if (!meta.keyspace.equals("loja") || !meta.name.equals("pedido"))
-            return Collections.emptyList();
+        if (!"loja".equals(meta.keyspace) || !"pedido".equals(meta.name)) return Collections.emptyList();
 
-        Row row = update.unfilteredIterator().next();
+        UnfilteredRowIterator it = update.unfilteredIterator();
+        if (!it.hasNext()) return Collections.emptyList();
 
-        // Obtém os valores do registro inserido
-        Cell<?> cellProduto = row.getCell(meta.getColumn("id_produto"));
-        Cell<?> cellQuantidade = row.getCell(meta.getColumn("quantidade"));
+        Unfiltered un = it.next();
+        if (!(un instanceof Row)) return Collections.emptyList();
 
-        if (cellProduto == null || cellQuantidade == null)
-            return Collections.emptyList();
+        Row row = (Row) un;
 
-        String idProduto = UTF8Type.instance.compose(cellProduto.value());
-        int quantidade = Int32Type.instance.compose(cellQuantidade.value());
+        ByteBuffer idProdutoValue = null;
+        ByteBuffer quantidadeValue = null;
 
-        // Cria mutação para atualizar o estoque
-        Mutation mut = Mutation.simpleBuilder("loja", "estoque")
-                .update()
-                .where("id_produto", idProduto)
-                .increment("total", -quantidade) // subtrai a quantidade do estoque
-                .build();
+        for (Cell<?> cell : row.cells()) {
+            String colName = cell.column().name.toString();
+            if (colName.equals("id_produto")) {
+                idProdutoValue = cell.buffer();
+            } else if (colName.equals("quantidade")) {
+                quantidadeValue = cell.buffer();
+            }
+        }
 
-        return Collections.singletonList(mut);
+        if (idProdutoValue == null || quantidadeValue == null) return Collections.emptyList();
+
+        String idProduto = UTF8Type.instance.compose(idProdutoValue);
+        int quantidade = Int32Type.instance.compose(quantidadeValue);
+
+        TableMetadata metaEstoque = Schema.instance.getTableMetadata("loja", "estoque");
+        if (metaEstoque == null) return Collections.emptyList();
+
+        // obtém a referência da coluna counter "total"
+        ColumnMetadata colTotal = metaEstoque.getColumn(new ColumnIdentifier("total", true));
+        if (colTotal == null) return Collections.emptyList();
+
+        logger.debug("Produto: {}, Quantidade: {}", idProduto, quantidade);
+
+     String cql = String.format("UPDATE loja.estoque SET total = total + %d WHERE id_produto = '%s'",
+                                - (long) quantidade, idProduto);
+     org.apache.cassandra.cql3.QueryProcessor.executeInternal(cql);
+
+     return Collections.emptyList();
+
     }
 }
 ```
-- Instalar o *java* no **Alpine** com `apk add openjdk17`
-- Criar o arquivo para armazenar o código da classe com `touch TriggerAtualizaEstoque.java`
-- Copiar as bibliotecas do **Cassandra** para o diretório local com `docker cp cassandra:/opt/cassandra/lib .`
-- A classe deve ser compilada e o `.class` gerado deve ser copiado para `$CASSANDRA_HOME/triggers/`
-- Utilizar as bibliotecas do diretório `$CASSANDRA_HOME/lib/*`
+- Criar a estrutura de diretório para a *trigger*
 ```bash
-javac -cp /lib/* TriggerAtualizaEstoque.java
+mkdir -p org/apache/cassandra/triggers
+```
+- Criar o arquivo para armazenar o código da classe com 
+```bash
+touch org/apache/cassandra/triggers/TriggerAtualizaEstoque.java
+```
+- Copiar as bibliotecas do **Cassandra** para o diretório local com 
+```bash
+mkdir lib
+docker cp cassandra:/opt/cassandra/lib/apache-cassandra-5.0.6.jar ./lib
+docker cp cassandra:/opt/cassandra/lib/slf4j-api-1.7.36.jar ./lib
+```
+- Obter as bibliotecas do **Cassandra**
+- A classe deve ser compilada e o `.class` gerado deve ser copiado para `$CASSANDRA_HOME/conf/triggers/`
+```bash
+javac -cp .:./lib/apache-cassandra-5.0.6.jar:./lib/slf4j-api-1.7.36.jar org/apache/cassandra/triggers/TriggerAtualizaEstoque.java
+jar cf TriggerAtualizaEstoque.jar org/apache/cassandra/triggers/TriggerAtualizaEstoque.class
+docker cp TriggerAtualizaEstoque.jar cassandra:/opt/cassandra/conf/triggers
+```
+- Reinicia o *container*
+```bash
+docker stop cassandra
+docker start cassandra
 ```
 - Criar a *trigger* na tabela `pedido`
 ```sql
+
 USE loja;
 
 CREATE TRIGGER trg_atualiza_estoque
 ON pedido
 USING 'org.apache.cassandra.triggers.TriggerAtualizaEstoque';
 ```
-- Reiniciar o **Cassandra**
+- Efetuar um teste
+```sql
+INSERT INTO pedido (id, id_produto, quantidade) VALUES (uuid(), 'PROD1', 10);
+```
 ***
 ### User-Defined Functions (UDFs)
 - Além das *triggers* também é possível criar funções customizadas no **Cassandra**
-- Necessário habilitar a permissão `enable_user_defined_functions: true` no `$CASSANDRA_HOME/conf/cassandra.yaml`
+- Necessário habilitar a permissão `user_defined_functions_enabled: true` no `$CASSANDRA_HOME/conf/cassandra.yaml`
 - Por exemplo, uma função para descrever o nível de estoque dos produtos conforme o critério:
     - Menos de 100 - BAIXO
     - Entre 101 e 500 - MÉDIO
@@ -580,12 +635,18 @@ CALLED ON NULL INPUT
 RETURNS tuple<int, int>
 LANGUAGE java AS
 $$
-    if (state == null) state = new Tuple(0, 0);
-    if (val != null) {
-        state.set(0, state.get(0) + val); // soma
-        state.set(1, state.get(1) + 1);   // contador
+    if (state == null) {
+        state = state.getType().newValue(0, 0);
     }
-    state;
+
+    if (val != null) {
+        int sum = state.getInt(0);
+        int count = state.getInt(1);
+        state.setInt(0, sum + val);
+        state.setInt(1, count + 1);
+    }
+
+    return state;
 $$;
 
 CREATE OR REPLACE FUNCTION final_avg(state tuple<int, int>)
@@ -593,8 +654,11 @@ CALLED ON NULL INPUT
 RETURNS double
 LANGUAGE java AS
 $$
-    if (state == null || state.get(1) == 0) return null;
-    state.get(0) / state.get(1);
+    if (state == null) return null;
+    int sum = state.getInt(0);
+    int count = state.getInt(1);
+    if (count == 0) return null;
+    return ((double) sum) / count;
 $$;
 
 CREATE OR REPLACE AGGREGATE avg_udf(int)
@@ -813,3 +877,11 @@ void loop() {
 
 }
 ```
+### Exercício
+- Criar uma aplicação para avaliação de filmes
+- Utilizar como *frontend* o modelo fornecido neste exemplo [index.html](https://github.com/esensato/nosql-2025-02/tree/main/projetos/cassandra)
+- O *backend* deve ser implementado em **Nodejs** com os seguintes *endpoints*
+    - Carregar a lista de filmes armazenados em uma tabela do **Cassandra* com `id` e `nome` do filme
+    - Avaliar e armazenar a avaliação do filme em uma segunda tabela com `id`, `nota` (0 a 10) e `data` (data da avaliação)
+    - Cadastrar um novo filme
+    - Exibir a lista de avaliações dos filmes 
