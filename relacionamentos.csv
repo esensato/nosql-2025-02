@@ -1,0 +1,51 @@
+nomePessoa,enderecoImovel,tipoRelacao,valor
+André Souza,"Travessa Bahia, 667",ALUGA,2512
+Fernanda Silva,"Travessa Santa Catarina, 926",ALUGA,1673
+João Costa,"Avenida Bahia, 795",ALUGA,1921
+Fernanda Lima,"Travessa Bahia, 822",ALUGA,2687
+Marina Souza,"Avenida Santa Catarina, 87",ALUGA,3362
+Fernanda Silva,"Travessa Pernambuco, 774",ALUGA,1027
+Juliana Costa,"Travessa Paraná, 283",ALUGA,3400
+Gustavo Lima,"Avenida Amazonas, 396",ALUGA,1208
+Carla Oliveira,"Avenida Minas Gerais, 470",ALUGA,3172
+Camila Santos,"Travessa Goiás, 411",ALUGA,3415
+João Silva,"Travessa Rio Grande, 647",ALUGA,2490
+Marina Oliveira,"Travessa Paraná, 283",ALUGA,3361
+João Costa,"Travessa Santa Catarina, 926",ALUGA,2176
+Carla Oliveira,"Rua Goiás, 881",ALUGA,1810
+Gustavo Lima,"Rua Pernambuco, 245",ALUGA,2831
+Carla Oliveira,"Avenida Ceará, 957",ALUGA,3421
+Juliana Lima,"Travessa Minas Gerais, 256",ALUGA,1765
+Juliana Costa,"Rua Goiás, 881",ALUGA,2884
+Fernanda Silva,"Travessa Ceará, 251",ALUGA,2196
+Fernanda Lima,"Avenida Pernambuco, 129",ALUGA,3460
+André Souza,"Travessa Minas Gerais, 740",ALUGA,2381
+Juliana Costa,"Avenida Bahia, 248",ALUGA,2735
+André Souza,"Rua Santa Catarina, 868",ALUGA,2855
+Fernanda Silva,"Travessa Minas Gerais, 340",ALUGA,2938
+Marina Oliveira,"Avenida Ceará, 713",ALUGA,3149
+João Rodrigues,"Travessa Rio Grande, 937",VENDE,341055
+Ana Pereira,"Avenida Minas Gerais, 470",VENDE,299550
+Maria Almeida,"Travessa Amazonas, 62",VENDE,463250
+Beatriz Santos,"Avenida Minas Gerais, 470",VENDE,393961
+Maria Ferreira,"Avenida Bahia, 795",VENDE,264507
+Ana Oliveira,"Rua Paraná, 408",VENDE,233297
+João Rodrigues,"Avenida Bahia, 613",VENDE,793423
+Marina Lima,"Travessa Pernambuco, 253",VENDE,664349
+Camila Costa,"Travessa Paraná, 423",VENDE,555674
+Paulo Rodrigues,"Travessa Rio Grande, 647",VENDE,385519
+João Rodrigues,"Avenida Minas Gerais, 470",VENDE,461893
+Maria Ferreira,"Travessa Minas Gerais, 340",VENDE,511251
+Maria Almeida,"Rua Paraná, 812",VENDE,375909
+Roberto Almeida,"Rua Minas Gerais, 671",VENDE,682861
+Ana Oliveira,"Avenida Ceará, 957",VENDE,374658
+Maria Ferreira,"Travessa Ceará, 26",VENDE,693469
+Roberto Oliveira,"Travessa Bahia, 667",VENDE,435312
+Camila Costa,"Travessa Ceará, 26",VENDE,235784
+Eduardo Lima,"Travessa Minas Gerais, 340",VENDE,765410
+Carla Rodrigues,"Avenida Santa Catarina, 87",VENDE,663494
+Ana Pereira,"Rua Santa Catarina, 868",VENDE,349738
+Ana Pereira,"Rua Goiás, 259",VENDE,400578
+Ana Pereira,"Rua Goiás, 914",VENDE,549614
+Carla Rodrigues,"Travessa Rio Grande, 409",VENDE,268888
+Aline Souza,"Avenida Minas Gerais, 470",VENDE,607082
