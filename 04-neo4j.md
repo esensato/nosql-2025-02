@@ -107,19 +107,19 @@ docker cp relacionamentos.csv neo4j:/var/lib/neo4j/import/
 - Carregar os imóveis
 ```javascript
 docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
-LOAD CSV WITH HEADERS FROM 'file:///imoveis.csv' AS linha
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/imoveis.csv' AS linha
 MERGE (:Imovel {endereco: linha.endereco, estado: linha.estado});"
 ```
 - Carregar as pessoas (proprietários e inquilinos)
 ```javascript
 docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
-LOAD CSV WITH HEADERS FROM 'file:///pessoas.csv' AS linha
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/pessoas.csv' AS linha
 MERGE (p:Pessoa {nome: linha.nome, tipo: linha.tipo});"
 ```
 - Finalmente, carregar as arestas
 ```javascript
 docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
-LOAD CSV WITH HEADERS FROM 'file:///relacionamentos.csv' AS linha
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/relacionamentos.csv' AS linha
 WITH linha WHERE linha.tipoRelacao = 'ALUGA'
 MATCH (p:Pessoa {nome: linha.nomePessoa})
 MATCH (i:Imovel {endereco: linha.enderecoImovel})
