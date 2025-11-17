@@ -96,45 +96,36 @@ match (p:Proprietario)-[:E_PROPRIETARIO_DE {venda: 250000}]->(i:Imovel) return p
 MATCH (n) DETACH DELETE n
 ```
 ## Importando Dados
-- Obter o arquivo *csv*
-- Copiar os arquivos para o diretório `/var/lib/neo4j/import/` do **Neo4j**
-```bash
-docker cp imoveis.csv neo4j:/var/lib/neo4j/import/
-docker cp pessoas.csv neo4j:/var/lib/neo4j/import/
-docker cp relacionamentos.csv neo4j:/var/lib/neo4j/import/
-```
-- Executar a importação dos arquivos
 - Carregar os imóveis
 ```javascript
-docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/imoveis.csv' AS linha
-MERGE (:Imovel {endereco: linha.endereco, estado: linha.estado});"
+MERGE (:Imovel {endereco: linha.endereco, estado: linha.estado});
 ```
 - Carregar as pessoas (proprietários e inquilinos)
 ```javascript
-docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/pessoas.csv' AS linha
-MERGE (p:Pessoa {nome: linha.nome, tipo: linha.tipo});"
+WITH linha WHERE linha.tipo = 'Proprietario'
+MERGE (p:Proprietario {nome: linha.nome});
+
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/pessoas.csv' AS linha
+WITH linha WHERE linha.tipo = 'Inquilino'
+MERGE (p:Inquilino {nome: linha.nome});
 ```
 - Finalmente, carregar as arestas
 ```javascript
-docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/relacionamentos.csv' AS linha
 WITH linha WHERE linha.tipoRelacao = 'ALUGA'
 MATCH (p:Pessoa {nome: linha.nomePessoa})
 MATCH (i:Imovel {endereco: linha.enderecoImovel})
 MERGE (p)-[r:ALUGA]->(i)
 SET r.valor = toInteger(linha.valor);
-"
 
-docker exec -it neo4j cypher-shell -u neo4j -p teste123 "
-LOAD CSV WITH HEADERS FROM 'file:///relacionamentos.csv' AS linha
+LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/esensato/nosql-2025-02/refs/heads/main/relacionamentos.csv' AS linha
 WITH linha WHERE linha.tipoRelacao = 'VENDE'
 MATCH (p:Pessoa {nome: linha.nomePessoa})
 MATCH (i:Imovel {endereco: linha.enderecoImovel})
 MERGE (p)-[r:VENDE]->(i)
 SET r.valor = toInteger(linha.valor);
-"
 ```
 - Retornar os imóveis que não estão nem sendo vendidos e nem alugados
 ```javascript
@@ -284,10 +275,16 @@ LIMIT 1;
 ## Integração Nodejs
 - Criar uma aplicação para associar pessoas a projetos
 ```bash
+apk add npm nodejs
 mkdir neo4j
 cd neo4j
 npm init -y
 npm install -y neo4j-driver express
+touch conexao.js
+touch server.js
+touch load.js
+mkdir public
+touch public/grafo.html
 ```
 - Eftuar a conexão com o **Neo4j** (criar um arquivo `conexao.js`)
 ```javascript
@@ -295,18 +292,22 @@ const neo4j = require('neo4j-driver');
 
 const driver = neo4j.driver(
   'bolt://localhost:7687',
-  neo4j.auth.basic('neo4j', 'teste123')
+  neo4j.auth.basic('neo4j', 'senha123')
 );
 
 module.exports = driver;
 ```
-- Criar um *endpoint* para retornar todas as conexões de uma pessoa
+- Criar um *endpoint* para retornar todas as conexões de uma pessoa (criar arquivo `server.js`)
 ```javascript
 const express = require('express');
-const router = express.Router();
 const driver = require('./conexao');
+const path = require('path');
+
+const app = express();
 
 app.use(express.json());
+
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/:nome/conexoes', async (req, res) => {
 
@@ -316,8 +317,8 @@ app.get('/:nome/conexoes', async (req, res) => {
   try {
     const result = await session.run(
       `
-      MATCH (p:Pessoa {nome: $nome})-[:TRABALHA_COM]->(outro:Pessoa)
-      RETURN outro.nome AS nome
+      MATCH (p:Pessoa {nome: $nome})-[:TRABALHA_EM]->(proj:Projeto)<-[:TRABALHA_EM]-(outro:Pessoa)
+      RETURN outro.nome AS nome, proj.titulo AS nome_projeto
       `,
       { nome }
     );
@@ -333,14 +334,19 @@ app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'))
 ```
 - Existe também a possibilidade de utilizar *javascript* para exibir o *grafo* dos relacionamentos
 ```html
+<html>
+
+<body>
 <div id="viz"></div>
+</body>
+
 <script src="https://cdn.neo4jlabs.com/neovis.js/v1.6.0/neovis.js"></script>
 <script>
   const config = {
     container_id: "viz",
     server_url: "bolt://localhost:7687",
     server_user: "neo4j",
-    server_password: "teste123",
+    server_password: "senha123",
     labels: {
       Pessoa: { caption: "nome" },
       Projeto: { caption: "nome" }
@@ -354,8 +360,9 @@ app.listen(3000, () => console.log('Servidor rodando em http://localhost:3000'))
   const viz = new NeoVis.default(config);
   viz.render();
 </script>
+</html>
 ```
-- Popular a base de dados inicialmente
+- Popular a base de dados inicialmente (criar arquivo `load.js`)
 ```javascript
 const neo4j = require("neo4j-driver");
 
@@ -393,7 +400,7 @@ async function main() {
       await session.run("CREATE (:Projeto {titulo: $titulo})", { titulo });
     }
 
-    console.log("🔗 Criando relacionamentos entre pessoas e projetos...");
+    console.log("Criando relacionamentos entre pessoas e projetos...");
     await session.run(`
       MATCH (p:Pessoa), (pr:Projeto)
       WITH p, pr
@@ -412,3 +419,25 @@ async function main() {
 
 main();
 ```
+### Exercício
+- Modelar um sistema de atendimento médico utilizando o **Neo4j** considerando o seguinte:
+    - Atores: Médico, Especialidade, Paciente, Plano de Saúde, Hostpital e Consulta
+    - Médicos possuem especialidades e atendem em determinados hospitais e planos de saúde
+    - Paciente possui plano de saúde
+    - Paciente tem consultas feitas por médicos (histórico)
+- Criar as especialidades Pediatra, Oftalmologista e Cardiologista
+- Criar 6 médicos e distribuir entre as especialidades acima
+- Criar 5 hospitais e distribuir os médicos entre eles
+- Criar 3 planos de saúde e distribuir os médicos entre eles
+- Criar 5 pacientes e distribuir os planos de saúde entre eles
+- Criar 10 consultas contendo um atributo data associando pacientes e médicos
+- Entrega deve consistir do *script* utilizado para criar o modelo e as consultas
+- Encaminhar um *print de tela* do diagrama criado dentro do **Neo4j**
+- Criar as seguintes consultas:
+    - Listar médicos de uma especialidade específica
+    - Encontrar médicos que aceitam um determinado plano de saúde
+    - Listar hospitais e os médicos que atendem neles
+    - Obter todas as consultas de um paciente
+    - Listar especialidades disponíveis em determinado hospital
+    - Listar todos os médicos que podem atender ao plano de saúde de um paciente
+    - Exibir o total de consultas realizadas por médico
